@@ -109,7 +109,8 @@ The final data model (see `final_relationship_model.png`) includes:
 
 **Data Model Diagram**:
 <img width="1414" alt="image" src="https://github.com/abychen01/TMDB/blob/38eafa2b12bfa801cf35d98a8e90937dc6f2265f/Relationship%20Model.png" />
-
+**Data Model Relationships**:
+<img width="1414" alt="image" src="https://github.com/abychen01/TMDB/blob/fdd9bb80c742a32a45a043dc55e4fde782bc7b32/Model%20Relationships.png"/>
 
 ## Setup Instructions
 
