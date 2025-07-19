@@ -118,7 +118,7 @@ The final data model includes:
 
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/your-username/tmdb-data-engineering.git
+   git clone https://github.com/abychen01/TMDB.git
    ```
 2. **Replace the TMDB API Key**: Update the `headers` variable in the notebooks with your API key.
 3. **Deploy Notebooks**: Upload the notebooks to your Fabric workspace.
