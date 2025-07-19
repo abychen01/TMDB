@@ -102,7 +102,7 @@ Updates fact tables daily and dimension tables on the 15th and 28th of each mont
 
 ## Data Model
 
-The final data model (see `final_relationship_model.png`) includes:
+The final data model includes:
 - **Fact Tables**: `fact_movies`, `fact_tv`.
 - **Dimension Tables**: `countries`, `languages`, `genre_combined`.
 - **Bridge Tables**: `genre_movie_bridge`, `genre_tv_bridge`.
