@@ -142,8 +142,6 @@ Contributions are welcome! Please submit a pull request or open an issue for sug
 
 ## License
 
-## License
-
 This project does not use a specific open-source license and is intended for educational and non-commercial purposes only.
 
 Please note that all movie-related data is sourced from The Movie Database (TMDB) and is subject to their [API Terms of Use](https://www.themoviedb.org/documentation/api/terms-of-use).
@@ -156,4 +154,7 @@ This product uses the TMDB API but is not endorsed or certified by TMDB.
 
 All movie-related metadata, images, and content are © The Movie Database (TMDB).
 
-![TMDB Logo](https://www.themoviedb.org/assets/2/v4/logos/293x302-powered-by-square-blue-ee051d74b6c2d0b66ef0b21d7550f3457fbf50cea1f29d90c0c1c6f824f8e784.png)
+
+
+
+<img width="341" alt="image" src="https://www.themoviedb.org/assets/2/v4/logos/v2/blue_long_1-8ba2ac31f354005783fab473602c34c3f4fd207150182061e425d366e4f34596.svg"/>
