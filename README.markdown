@@ -1,6 +1,6 @@
 # TMDB Data Engineering Project
 
-This project is a data engineering pipeline that collects movie and TV show data from The Movie Database (TMDB) API and processes it using a medallion architecture (Bronze, Silver, Gold layers). It is implemented using Azure Synapse Analytics with PySpark notebooks and orchestrated via pipelines. The project is divided into two main parts: **Historic ETL** for initial data collection and **Daily ETL** for incremental updates.
+This project is a data engineering pipeline that collects movie and TV show data from The Movie Database (TMDB) API and processes it using a medallion architecture (Bronze, Silver, Gold layers). It is implemented using Microsoft Fabric with PySpark notebooks and orchestrated via pipelines. The project is divided into two main parts: **Historic ETL** for initial data collection and **Daily ETL** for incremental updates.
 
 ## Project Overview
 
@@ -33,10 +33,11 @@ The project includes two ETL processes:
 
 ## Prerequisites
 
-- **Azure Synapse Analytics**: Workspace with Lakehouses (`Bronze_LH`, `Silver_LH`, `Gold_LH`).
-- **TMDB API Key**: Obtain from [TMDB](https://www.themoviedb.org/documentation/api) and update in the notebooks.
+- **Microsoft Fabric**: Workspace with Lakehouses (`Bronze_LH`, `Silver_LH`, `Gold_LH`).
+- **TMDB API Key**: Obtain from [TMDB](https://www.themoviedb.org/documentation/api) and add it to Azure Key Vault.
 - **Python Libraries**: `requests`, `pyspark`, `delta`.
-- **Azure Data Factory**: For pipeline orchestration.
+- **Fabric Data Pipeline**: For pipeline orchestration.
+- **Fabric DataFlow Gen 2**: For date table setup using Power Query.
 
 ## Medallion Architecture
 
@@ -68,14 +69,14 @@ The project includes two ETL processes:
 ## ETL Pipelines
 
 ### Historic ETL Pipeline
-Fetches all available data from TMDB for 2025 and processes it through the medallion layers.
+Fetches data from TMDB and processes it through the medallion layers.
 
 1. **Bronze Activity**: Runs `Bronze Nb Historic.ipynb` to fetch and store raw data.
 2. **Silver Activity**: Runs `Silver Nb - Historic.ipynb` to transform data into the Silver layer.
 3. **Gold Activity**: Runs `Gold Nb - Historic.ipynb` to aggregate data into the Gold layer.
 
 **Pipeline Diagram**:
-![Historic ETL Pipeline](ETL%20historic%20pipeline.png)
+<img width="1414" alt="image" src="https://github.com/abychen01/TMDB/blob/38eafa2b12bfa801cf35d98a8e90937dc6f2265f/ETL%20Historic%20pipeline.png" />
 
 ### Daily ETL Pipeline
 Updates fact tables daily and dimension tables on the 15th and 28th of each month.
@@ -95,7 +96,9 @@ Updates fact tables daily and dimension tables on the 15th and 28th of each mont
 5. **Gold Activity**: Runs `Gold Nb.ipynb` to aggregate data into the Gold layer.
 
 **Pipeline Diagram**:
-![Daily ETL Pipeline](ETL%20pipeline.png)
+
+<img width="1414" alt="image" src="https://github.com/abychen01/TMDB/blob/38eafa2b12bfa801cf35d98a8e90937dc6f2265f/ETL%20pipeline.png" />
+
 
 ## Data Model
 
@@ -104,6 +107,10 @@ The final data model (see `final_relationship_model.png`) includes:
 - **Dimension Tables**: `countries`, `languages`, `genre_combined`.
 - **Bridge Tables**: `genre_movie_bridge`, `genre_tv_bridge`.
 
+**Data Model Diagram**:
+<img width="1414" alt="image" src="https://github.com/abychen01/TMDB/blob/38eafa2b12bfa801cf35d98a8e90937dc6f2265f/Relationship%20Model.png" />
+
+
 ## Setup Instructions
 
 1. **Clone the Repository**:
@@ -111,12 +118,12 @@ The final data model (see `final_relationship_model.png`) includes:
    git clone https://github.com/your-username/tmdb-data-engineering.git
    ```
 2. **Replace the TMDB API Key**: Update the `headers` variable in the notebooks with your API key.
-3. **Deploy Notebooks**: Upload the notebooks to your Azure Synapse workspace.
+3. **Deploy Notebooks**: Upload the notebooks to your Fabric workspace.
 4. **Configure Lakehouses**:
    - `Bronze_LH`: For raw data.
    - `Silver_LH`: For transformed data.
    - `Gold_LH`: For aggregated data.
-5. **Set Up Pipelines**: Configure pipelines in Azure Data Factory using the provided screenshots.
+5. **Set Up Pipelines**: Configure pipelines in Fabric Data Pipeline using the provided screenshots.
 6. **Run Historic ETL**: Execute the historic pipeline to populate the initial dataset.
 7. **Schedule Daily ETL**: Schedule the daily pipeline to run daily.
 
@@ -135,4 +142,18 @@ Contributions are welcome! Please submit a pull request or open an issue for sug
 
 ## License
 
-This project is licensed under the MIT License.
+## License
+
+This project does not use a specific open-source license and is intended for educational and non-commercial purposes only.
+
+Please note that all movie-related data is sourced from The Movie Database (TMDB) and is subject to their [API Terms of Use](https://www.themoviedb.org/documentation/api/terms-of-use).
+
+Use of TMDB data must comply with their licensing terms. TMDB data is © TMDB.
+
+## Copyright
+
+This product uses the TMDB API but is not endorsed or certified by TMDB.
+
+All movie-related metadata, images, and content are © The Movie Database (TMDB).
+
+![TMDB Logo](https://www.themoviedb.org/assets/2/v4/logos/293x302-powered-by-square-blue-ee051d74b6c2d0b66ef0b21d7550f3457fbf50cea1f29d90c0c1c6f824f8e784.png)
