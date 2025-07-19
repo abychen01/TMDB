@@ -1,0 +1,43 @@
+table languages
+	lineageTag: 418a12e8-b135-4d0b-b129-db4c08ac7eb7
+	sourceLineageTag: [dbo].[languages]
+
+	column language_id
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: 38740d32-17d0-4a81-9886-e47c24a4f438
+		sourceLineageTag: language_id
+		summarizeBy: none
+		sourceColumn: language_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column english_name
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: 285e5080-bae1-49f1-b549-18d5e8a2c506
+		sourceLineageTag: english_name
+		summarizeBy: none
+		sourceColumn: english_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column name
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: 5e16acc3-cb22-4130-bcdd-895fa9d88827
+		sourceLineageTag: name
+		summarizeBy: none
+		sourceColumn: name
+
+		annotation SummarizationSetBy = Automatic
+
+	partition languages = entity
+		mode: directLake
+		source
+			entityName: languages
+			schemaName: dbo
+			expressionSource: DatabaseQuery
+
+	annotation PBI_ResultType = Table
+

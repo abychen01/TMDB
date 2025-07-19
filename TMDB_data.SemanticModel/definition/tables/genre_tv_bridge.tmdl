@@ -1,0 +1,35 @@
+table genre_tv_bridge
+	lineageTag: 620f83a0-2b6b-4605-b9a7-195e476c1ff5
+	sourceLineageTag: [dbo].[genre_tv_bridge]
+
+	column TV_ID
+		dataType: int64
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: 8bd9b203-ddcc-4971-bb69-b2416b17025e
+		sourceLineageTag: TV_ID
+		summarizeBy: none
+		sourceColumn: TV_ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column Genre_IDs
+		dataType: int64
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: 08459fb9-b0e4-4265-8ad7-77a3062803fa
+		sourceLineageTag: Genre_IDs
+		summarizeBy: none
+		sourceColumn: Genre_IDs
+
+		annotation SummarizationSetBy = Automatic
+
+	partition genre_tv_bridge = entity
+		mode: directLake
+		source
+			entityName: genre_tv_bridge
+			schemaName: dbo
+			expressionSource: DatabaseQuery
+
+	annotation PBI_ResultType = Table
+

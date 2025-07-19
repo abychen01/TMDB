@@ -1,0 +1,35 @@
+table genre_movie_bridge
+	lineageTag: 0a754618-7742-416b-ad61-6d3e202cb5ff
+	sourceLineageTag: [dbo].[genre_movie_bridge]
+
+	column Movie_ID
+		dataType: int64
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: 71bed934-3e8a-4d2c-a86d-95fb9200d54d
+		sourceLineageTag: Movie_ID
+		summarizeBy: none
+		sourceColumn: Movie_ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column Genre_ID
+		dataType: int64
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: 58f7939d-74bf-4fee-9ce7-e2b6f0f5be05
+		sourceLineageTag: Genre_ID
+		summarizeBy: none
+		sourceColumn: Genre_ID
+
+		annotation SummarizationSetBy = Automatic
+
+	partition genre_movie_bridge = entity
+		mode: directLake
+		source
+			entityName: genre_movie_bridge
+			schemaName: dbo
+			expressionSource: DatabaseQuery
+
+	annotation PBI_ResultType = Table
+

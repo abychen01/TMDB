@@ -1,0 +1,198 @@
+table fact_tv
+	lineageTag: 5808dd60-3658-4d27-9a34-4b58238978d2
+	sourceLineageTag: [dbo].[fact_tv]
+
+	column TV_ID
+		dataType: int64
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: a504394b-268d-4d87-a7dd-fe42d5ee3e21
+		sourceLineageTag: TV_ID
+		summarizeBy: none
+		sourceColumn: TV_ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column Backdrop_Path
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: ef3724fa-1753-4b08-9c9f-bd596f5eafff
+		sourceLineageTag: Backdrop_Path
+		summarizeBy: none
+		sourceColumn: Backdrop_Path
+
+		annotation SummarizationSetBy = Automatic
+
+	column First_Air_Date
+		dataType: dateTime
+		formatString: General Date
+		sourceProviderType: date
+		lineageTag: c61ca151-1b29-4d1f-a490-778d14b6780d
+		sourceLineageTag: First_Air_Date
+		summarizeBy: none
+		sourceColumn: First_Air_Date
+
+		annotation SummarizationSetBy = Automatic
+
+	column Genre_IDs
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: ec9b5e3c-52f6-42f5-a55d-0f1994a74794
+		sourceLineageTag: Genre_IDs
+		summarizeBy: none
+		sourceColumn: Genre_IDs
+
+		annotation SummarizationSetBy = Automatic
+
+	column Name
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: f2bcfdac-e7fb-4107-9821-13ed65ea6729
+		sourceLineageTag: Name
+		summarizeBy: none
+		sourceColumn: Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column Origin_Country
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: 6e935f7d-0813-423c-a93f-5231079703a5
+		sourceLineageTag: Origin_Country
+		summarizeBy: none
+		sourceColumn: Origin_Country
+
+		annotation SummarizationSetBy = Automatic
+
+	column Original_Language
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: 56761510-557d-430c-bf9f-84b7fe98aeb5
+		sourceLineageTag: Original_Language
+		summarizeBy: none
+		sourceColumn: Original_Language
+
+		annotation SummarizationSetBy = Automatic
+
+	column Original_Name
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: 70819a0b-bd0a-4d2d-ae7f-04b2dc1d922a
+		sourceLineageTag: Original_Name
+		summarizeBy: none
+		sourceColumn: Original_Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column Overview
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: 7546997d-4048-446d-a6a7-d8c7926aa472
+		sourceLineageTag: Overview
+		summarizeBy: none
+		sourceColumn: Overview
+
+		annotation SummarizationSetBy = Automatic
+
+	column Popularity
+		dataType: double
+		sourceProviderType: real
+		lineageTag: ec3f660a-d131-4e9f-92f5-df512ac22d62
+		sourceLineageTag: Popularity
+		summarizeBy: none
+		sourceColumn: Popularity
+
+		changedProperty = SummarizeBy
+
+		annotation SummarizationSetBy = User
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Poster_Path
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: 811da2ad-33cb-4cdf-bfd0-7f5d856dc10b
+		sourceLineageTag: Poster_Path
+		summarizeBy: none
+		sourceColumn: Poster_Path
+
+		annotation SummarizationSetBy = Automatic
+
+	column Vote_Average
+		dataType: double
+		sourceProviderType: real
+		lineageTag: 8fce5f0c-3973-44ac-8d33-41fbb487bdb7
+		sourceLineageTag: Vote_Average
+		summarizeBy: none
+		sourceColumn: Vote_Average
+
+		changedProperty = SummarizeBy
+
+		annotation SummarizationSetBy = User
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Vote_Count
+		dataType: double
+		sourceProviderType: real
+		lineageTag: 46cd36ab-6fac-478e-8867-45b9a224a56f
+		sourceLineageTag: Vote_Count
+		summarizeBy: sum
+		sourceColumn: Vote_Count
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column episode_run_time
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		lineageTag: ba336add-ef8b-4316-a401-e043e3ce9ab3
+		sourceLineageTag: episode_run_time
+		summarizeBy: sum
+		sourceColumn: episode_run_time
+
+		annotation SummarizationSetBy = Automatic
+
+	column number_of_seasons
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		lineageTag: fac03e8d-fa2e-435f-a4c1-f101998fe494
+		sourceLineageTag: number_of_seasons
+		summarizeBy: sum
+		sourceColumn: number_of_seasons
+
+		annotation SummarizationSetBy = Automatic
+
+	column type
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: 7f6cd26c-b8bd-40db-92d5-7173abd51076
+		sourceLineageTag: type
+		summarizeBy: none
+		sourceColumn: type
+
+		annotation SummarizationSetBy = Automatic
+
+	column number_of_episodes
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		lineageTag: ee66e220-04e2-4b9c-b5bd-164cc6425262
+		sourceLineageTag: number_of_episodes
+		summarizeBy: sum
+		sourceColumn: number_of_episodes
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fact_tv = entity
+		mode: directLake
+		source
+			entityName: fact_tv
+			schemaName: dbo
+			expressionSource: DatabaseQuery
+
+	annotation PBI_ResultType = Table
+
