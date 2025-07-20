@@ -205,7 +205,10 @@ movie_df.write.format("delta").mode("overwrite")\
 
 movie_df2 = spark.read.table("temp_fact_movies")
 count = movie_df2.count()
+
+#creating a list called rows to make it iterable
 rows = movie_df2.take(count)
+
 movie_data1 = []
 
 for index, row in enumerate(rows):
