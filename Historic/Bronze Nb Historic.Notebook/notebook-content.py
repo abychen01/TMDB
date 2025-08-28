@@ -472,15 +472,15 @@ movie_df.write.format("delta").mode("overwrite")\
 
 # Fetch initial TV show data from TMDB API and store in Bronze layer
 
-url = "https://api.themoviedb.org/3/discover/tv?first_air_date_year=2025&include_adult=false&include_null_first_air_dates=false&language=en-US&page=1&sort_by=popularity.desc"
+#url = "https://api.themoviedb.org/3/discover/tv?first_air_date_year=2025&include_adult=false&include_null_first_air_dates=false&language=en-US&page=1&sort_by=popularity.desc"
 tv_list = []
 
 response = requests.get(url, headers=headers)
-total_pages = response.json()['total_pages']
+#total_pages = response.json()['total_pages']
 
-for x in range(1,total_pages+3):
+for x in range(1,400):
 
-    url = f"https://api.themoviedb.org/3/discover/tv?first_air_date_year=2025&include_adult=false&include_null_first_air_dates=false&language=en-US&page={x}&sort_by=popularity.desc"
+    url = f"https://api.themoviedb.org/3/tv/popular?language=en-US&page={x}"
     
     try:
         response = requests.get(url, headers=headers)

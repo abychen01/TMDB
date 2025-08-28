@@ -367,15 +367,15 @@ except Exception as e:
 # Fetch initial TV show data from TMDB API for 2025 and store in a temporary table
 # - Fetches data across multiple pages, sorts, removes duplicates, and saves
 
-url = "https://api.themoviedb.org/3/discover/tv?first_air_date_year=2025&include_adult=false&include_null_first_air_dates=false&language=en-US&page=1&sort_by=popularity.desc"
+#url = "https://api.themoviedb.org/3/discover/tv?first_air_date_year=2025&include_adult=false&include_null_first_air_dates=false&language=en-US&page=1&sort_by=popularity.desc"
 tv_list = []
 
-response = requests.get(url, headers=headers)
-total_pages = response.json()['total_pages']
+#response = requests.get(url, headers=headers)
+#total_pages = response.json()['total_pages']
 
-for x in range(1,total_pages+3):
+for x in range(1,400):
 
-    url = f"https://api.themoviedb.org/3/discover/tv?first_air_date_year=2025&include_adult=false&include_null_first_air_dates=false&language=en-US&page={x}&sort_by=popularity.desc"
+    url = f"https://api.themoviedb.org/3/tv/popular?language=en-US&page={x}"
     
     try:
         response = requests.get(url, headers=headers)
@@ -419,6 +419,34 @@ tv_df.write.format("delta").mode("overwrite")\
 # META   "language": "python",
 # META   "language_group": "synapse_pyspark"
 # META }
+
+# MARKDOWN ********************
+
+#     {
+#       "adult": false,
+#       "backdrop_path": "/hqqdoXdrp4o8ZqADHVYIXwBkn3Y.jpg",
+#       "genre_ids": [
+#         10759,
+#         16,
+#         35,
+#         10765,
+#         10762,
+#         10751
+#       ],
+#       "id": 65733,
+#       "origin_country": [
+#         "JP"
+#       ],
+#       "original_language": "ja",
+#       "original_name": "ドラえもん",
+#       "overview": "Robotic cat Doraemon is sent back in time from the 22nd century to protect 10-year-old Noby, a lazy and uncoordinated boy who is destined to have a tragic future. Doraemon can create secret gadgets from a pocket on his stomach, but they usually cause more bad than good because of Noby's propensity to misuse them.",
+#       "popularity": 126.2166,
+#       "poster_path": "/9ZN1P32SHviL3SV51qLivxycvcx.jpg",
+#       "first_air_date": "2005-04-22",
+#       "name": "Doraemon",
+#       "vote_average": 8.018,
+#       "vote_count": 190
+#     },
 
 # CELL ********************
 
