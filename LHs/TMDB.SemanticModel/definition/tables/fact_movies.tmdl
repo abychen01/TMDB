@@ -1,0 +1,182 @@
+table fact_movies
+	lineageTag: 2a40f796-d95c-41f0-af65-0af1a5e0da44
+
+	column Movie_ID
+		dataType: int64
+		formatString: 0
+		lineageTag: 1fe397b3-2aa0-421a-8918-578df4d778b4
+		summarizeBy: none
+		sourceColumn: Movie_ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column Backdrop_Path
+		dataType: string
+		lineageTag: 4e2feb62-1635-4558-a1be-7228567d040c
+		summarizeBy: none
+		sourceColumn: Backdrop_Path
+
+		annotation SummarizationSetBy = Automatic
+
+	column Genre_IDs
+		dataType: string
+		lineageTag: 40f3a063-6062-4ea6-b0ad-50044cee0448
+		summarizeBy: none
+		sourceColumn: Genre_IDs
+
+		annotation SummarizationSetBy = Automatic
+
+	column Original_Language
+		dataType: string
+		lineageTag: 243ba1d6-9dc8-4b81-ac14-48bbacffe71e
+		summarizeBy: none
+		sourceColumn: Original_Language
+
+		annotation SummarizationSetBy = Automatic
+
+	column Original_Title
+		dataType: string
+		lineageTag: 61ec2d6d-7854-4714-93b8-fe4448ac8875
+		summarizeBy: none
+		sourceColumn: Original_Title
+
+		annotation SummarizationSetBy = Automatic
+
+	column Overview
+		dataType: string
+		lineageTag: 99dc5230-cc1e-4034-9984-bc9340c27741
+		summarizeBy: none
+		sourceColumn: Overview
+
+		annotation SummarizationSetBy = Automatic
+
+	column Popularity
+		dataType: double
+		lineageTag: 849781c2-7ff9-425e-b2c2-079dac1cc6a2
+		summarizeBy: sum
+		sourceColumn: Popularity
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Poster_Path
+		dataType: string
+		lineageTag: fa40cc54-be2e-4588-9d2c-2c84e7211e45
+		summarizeBy: none
+		sourceColumn: Poster_Path
+
+		annotation SummarizationSetBy = Automatic
+
+	column Release_Date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: ee49ed3f-f7b5-4a0b-a743-986f51088eda
+		summarizeBy: none
+		sourceColumn: Release_Date
+
+		variation Variation
+			isDefault
+			relationship: 05843c6c-2b42-4080-acdd-1ea5cf5ec22f
+			defaultHierarchy: LocalDateTable_fe4710c9-fb2f-485b-b6e2-595e2274efb1.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Title
+		dataType: string
+		lineageTag: f4e071c5-f6c5-46cd-b437-33b239e93897
+		summarizeBy: none
+		sourceColumn: Title
+
+		annotation SummarizationSetBy = Automatic
+
+	column Vote_Average
+		dataType: double
+		lineageTag: 4380a046-9e4b-4738-b1bf-2166574fccaf
+		summarizeBy: sum
+		sourceColumn: Vote_Average
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Vote_Count
+		dataType: double
+		lineageTag: 7eed2d2e-0417-40fb-9fd7-babfea9b84f2
+		summarizeBy: sum
+		sourceColumn: Vote_Count
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column budget
+		dataType: int64
+		formatString: 0
+		lineageTag: 06c4cb47-0647-4efc-9a14-2b7202e008bd
+		summarizeBy: sum
+		sourceColumn: budget
+
+		annotation SummarizationSetBy = Automatic
+
+	column imdb_id
+		dataType: string
+		lineageTag: 1da6a33e-71ce-432e-87c0-f65eda088d8d
+		summarizeBy: none
+		sourceColumn: imdb_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column origin_country
+		dataType: string
+		lineageTag: 5e5f4e7b-e29b-4574-be08-f690a35b117a
+		summarizeBy: none
+		sourceColumn: origin_country
+
+		annotation SummarizationSetBy = Automatic
+
+	column revenue
+		dataType: int64
+		formatString: 0
+		lineageTag: 2ac982b4-db07-4f2a-b3a8-dbc72036810d
+		summarizeBy: sum
+		sourceColumn: revenue
+
+		annotation SummarizationSetBy = Automatic
+
+	column runtime
+		dataType: int64
+		formatString: 0
+		lineageTag: 446b3f4c-471a-4396-bece-2fb53df84f78
+		summarizeBy: sum
+		sourceColumn: runtime
+
+		annotation SummarizationSetBy = Automatic
+
+	column Name
+		dataType: string
+		lineageTag: adda08f4-d64c-4244-b278-fa601c40a92e
+		summarizeBy: none
+		sourceColumn: Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column Gender
+		dataType: string
+		lineageTag: fe1f88c9-982f-4301-a5cb-3c40cf7542c6
+		summarizeBy: none
+		sourceColumn: Gender
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fact_movies = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database("fabric-rds-sql-server.cxm8ga0awaka.eu-north-1.rds.amazonaws.com", "TMDB"),
+				    dbo_fact_movies = Source{[Schema="dbo",Item="fact_movies"]}[Data]
+				in
+				    dbo_fact_movies
+

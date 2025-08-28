@@ -1,0 +1,23 @@
+relationship 18389efe-85bb-459e-8252-aa7b0fc81f0f
+	joinOnDateBehavior: datePartOnly
+	fromColumn: Date.Date
+	toColumn: LocalDateTable_1a9b2cf3-7eeb-4fbd-8e56-fbe338fac0af.Date
+
+relationship e8f7e3e5-fb15-41ab-a23f-cfdc27dbfd31
+	joinOnDateBehavior: datePartOnly
+	fromColumn: fact_tv.First_Air_Date
+	toColumn: LocalDateTable_fa58c978-dec8-49a2-983a-593806c03612.Date
+
+relationship 05843c6c-2b42-4080-acdd-1ea5cf5ec22f
+	joinOnDateBehavior: datePartOnly
+	fromColumn: fact_movies.Release_Date
+	toColumn: LocalDateTable_fe4710c9-fb2f-485b-b6e2-595e2274efb1.Date
+
+relationship AutoDetected_4266a2dd-3d32-4fad-96d1-df53b2195f5d
+	fromColumn: genre_movie_bridge.Movie_ID
+	toColumn: fact_movies.Movie_ID
+
+relationship AutoDetected_de68a564-697f-4859-a300-41c1c4e0c1d3
+	fromColumn: genre_tv_bridge.TV_ID
+	toColumn: fact_tv.TV_ID
+

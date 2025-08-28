@@ -1,0 +1,30 @@
+table genre_movie_bridge
+	lineageTag: a0fa19cf-628c-4cd7-bc02-cbc558dce6f0
+
+	column Movie_ID
+		dataType: int64
+		formatString: 0
+		lineageTag: e3b79beb-1424-442f-adcf-d53d97098c55
+		summarizeBy: none
+		sourceColumn: Movie_ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column Genre_ID
+		dataType: int64
+		formatString: 0
+		lineageTag: 0c292387-4047-4170-8f29-171881e7304d
+		summarizeBy: count
+		sourceColumn: Genre_ID
+
+		annotation SummarizationSetBy = Automatic
+
+	partition genre_movie_bridge = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database("fabric-rds-sql-server.cxm8ga0awaka.eu-north-1.rds.amazonaws.com", "TMDB"),
+				    dbo_genre_movie_bridge = Source{[Schema="dbo",Item="genre_movie_bridge"]}[Data]
+				in
+				    dbo_genre_movie_bridge
+

@@ -1,0 +1,29 @@
+model Model
+	culture: en-GB
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: en-GB
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation PBI_QueryOrder = ["countries","genre_combined","genre_movie_bridge","genre_tv_bridge","languages","Date","fact_tv","fact_movies"]
+
+annotation __PBI_TimeIntelligenceEnabled = 1
+
+annotation PBIDesktopVersion = 2.145.1602.0 (25.07)+10647c9fa319b5e39936cdb21328038c371d1fe4
+
+ref table countries
+ref table DateTableTemplate_c3737780-b41b-4b77-a9d8-ec5f038f66d0
+ref table genre_combined
+ref table genre_movie_bridge
+ref table genre_tv_bridge
+ref table languages
+ref table Date
+ref table LocalDateTable_1a9b2cf3-7eeb-4fbd-8e56-fbe338fac0af
+ref table fact_tv
+ref table fact_movies
+ref table LocalDateTable_fa58c978-dec8-49a2-983a-593806c03612
+ref table LocalDateTable_fe4710c9-fb2f-485b-b6e2-595e2274efb1
+
+ref cultureInfo en-GB
+
