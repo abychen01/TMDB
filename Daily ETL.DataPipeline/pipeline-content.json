@@ -6,7 +6,7 @@
         "typeProperties": {
           "source": {
             "type": "DataWarehouseSource",
-            "sqlReaderQuery": "SELECT DAY(CAST( GETDATE() AS DATE ))",
+            "sqlReaderQuery": "SELECT DAY(CAST( GETDATE() AS DATE )) AS day",
             "partitionOption": "None",
             "queryTimeout": "02:00:00"
           },
