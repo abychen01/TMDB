@@ -8,15 +8,18 @@
 # META   },
 # META   "dependencies": {
 # META     "lakehouse": {
-# META       "default_lakehouse": "3fca51c1-7db2-47bf-b6cd-aca59bf08c94",
+# META       "default_lakehouse": "5f908ebc-d61f-4264-97d2-eaa9e2d1b9c3",
 # META       "default_lakehouse_name": "Gold_LH",
-# META       "default_lakehouse_workspace_id": "6eb1325f-b953-490a-b555-06b17f8521c8",
+# META       "default_lakehouse_workspace_id": "b8e7a887-498e-4e85-af11-885c32a43aa5",
 # META       "known_lakehouses": [
 # META         {
-# META           "id": "3fca51c1-7db2-47bf-b6cd-aca59bf08c94"
+# META           "id": "5f908ebc-d61f-4264-97d2-eaa9e2d1b9c3"
 # META         },
 # META         {
-# META           "id": "4e947ca6-aebd-445c-b8b5-949389450fd0"
+# META           "id": "d54a4800-b077-4df7-a53b-4a79430916a4"
+# META         },
+# META         {
+# META           "id": "ad0ef244-eccd-4390-9f4a-899dd2b819f3"
 # META         }
 # META       ]
 # META     }
@@ -54,11 +57,26 @@ print(tables_list)
 df2 = spark.read.option("headers",True).csv("Files/creds")
 password = df2.collect()[1]['_c0']
 
+db = "TMDB"
+
+jdbc_url = f"jdbc:sqlserver://myfreesqldbserver66.database.windows.net:1433;" \
+           f"databaseName={db};" \
+           "encrypt=true;" \
+           "trustServerCertificate=false;" \
+           "hostNameInCertificate=*.database.windows.net;" \
+           "loginTimeout=30;"
+
+jdbc_properties = {
+    "user": "admin2",
+    "password": password,
+    "driver": "com.microsoft.sqlserver.jdbc.SQLServerDriver"
+}
+
 conn_str_master = (
             f"DRIVER={{ODBC Driver 18 for SQL Server}};"
-            f"SERVER=fabric-rds-sql-server.cxm8ga0awaka.eu-north-1.rds.amazonaws.com,1433;"
+            f"SERVER=tcp:myfreesqldbserver66.database.windows.net,1433;"
             f"DATABASE=master;"
-            f"UID=admin;"
+            f"UID=admin2;"
             f"PWD={password};"
             f"Encrypt=yes;"
             f"TrustServerCertificate=yes;"
@@ -67,14 +85,16 @@ conn_str_master = (
         
 conn_str = (
             f"DRIVER={{ODBC Driver 18 for SQL Server}};"
-            f"SERVER=fabric-rds-sql-server.cxm8ga0awaka.eu-north-1.rds.amazonaws.com,1433;"
-            f"DATABASE=TMDB;"
-            f"UID=admin;"
+            f"SERVER=tcp:myfreesqldbserver66.database.windows.net,1433;"
+            f"DATABASE={db};"
+            f"UID=admin2;"
             f"PWD={password};"
             f"Encrypt=yes;"
             f"TrustServerCertificate=yes;"
             f"Connect Timeout=30;"
-        )
+)
+
+
 
 # METADATA ********************
 
@@ -173,6 +193,8 @@ for table in tables_list:
 
 # CELL ********************
 
+'''
+
 jdbc_url = "jdbc:sqlserver://fabric-rds-sql-server.cxm8ga0awaka.eu-north-1.rds.amazonaws.com:1433;databaseName=TMDB;encrypt=true;trustServerCertificate=true"
 jdbc_properties = {
     "user": "admin",
@@ -180,6 +202,7 @@ jdbc_properties = {
     "driver": "com.microsoft.sqlserver.jdbc.SQLServerDriver"
 }
 
+'''
 
 for table in tables_list:
 

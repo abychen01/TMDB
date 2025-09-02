@@ -8,12 +8,12 @@
 # META   },
 # META   "dependencies": {
 # META     "lakehouse": {
-# META       "default_lakehouse": "639eaa96-065c-434f-be2d-d1ad81de7f33",
+# META       "default_lakehouse": "d54a4800-b077-4df7-a53b-4a79430916a4",
 # META       "default_lakehouse_name": "Bronze_LH",
-# META       "default_lakehouse_workspace_id": "6eb1325f-b953-490a-b555-06b17f8521c8",
+# META       "default_lakehouse_workspace_id": "b8e7a887-498e-4e85-af11-885c32a43aa5",
 # META       "known_lakehouses": [
 # META         {
-# META           "id": "639eaa96-065c-434f-be2d-d1ad81de7f33"
+# META           "id": "d54a4800-b077-4df7-a53b-4a79430916a4"
 # META         }
 # META       ]
 # META     }
@@ -65,7 +65,7 @@ gold_dict = {
 
 import requests, time, json
 from pprint import pprint
-from pyspark.sql.types import StringType,StructField,StructType, IntegerType
+from pyspark.sql.types import StringType,StructField,StructType, IntegerType, LongType
 from pyspark.sql.functions import col, lit, desc,asc, year
 from notebookutils import mssparkutils
 
@@ -136,6 +136,16 @@ language_schema = StructType([
     StructField("name",StringType(),True)
 ])
 
+movie_temp_schema = StructType([
+    StructField("Movie_ID", StringType(), False),
+    StructField("budget", LongType(), True),
+    StructField("imdb_id", StringType(), True),
+    StructField("origin_country", StringType(), True),   
+    StructField("revenue", LongType(), True),
+    StructField("runtime", IntegerType(), True)
+])
+
+
 # METADATA ********************
 
 # META {
@@ -147,10 +157,11 @@ language_schema = StructType([
 
 # Set up headers for TMDB API requests with API key
 
+
 headers = {
-        "accept": "application/json",
-        "Authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwMmZjZGM2ZGQxZmIxOTNlNjQ2MjU5MGU0ZmUwZWM2NCIsIm5iZiI6MTc1MTg4OTMxNy45ODIsInN1YiI6IjY4NmJiNWE1NzFiNzVhZDM3NGE5NWJmZiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.DrBLlqA8g9mlH2zJC0c60vogL1jmcGNH2oMdg2qhP3s"
-    }
+    "accept": "application/json",
+    "Authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwMmZjZGM2ZGQxZmIxOTNlNjQ2MjU5MGU0ZmUwZWM2NCIsIm5iZiI6MTc1MTg4OTMxNy45ODIsInN1YiI6IjY4NmJiNWE1NzFiNzVhZDM3NGE5NWJmZiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.DrBLlqA8g9mlH2zJC0c60vogL1jmcGNH2oMdg2qhP3s"
+}
 
 # METADATA ********************
 
@@ -379,6 +390,7 @@ for index, row in enumerate(rows):
     url = f"https://api.themoviedb.org/3/movie/{movie_id}?language=en-US"
     
     try:
+        response = requests.get(url,headers=headers)
         response.raise_for_status()  # Check for HTTP errors
         data = response.json()
         
@@ -395,7 +407,7 @@ for index, row in enumerate(rows):
         print(e)
 
 temp_df1 = spark.createDataFrame(movie_data1,\
-            ["Movie_ID","budget","imdb_id","origin_country","revenue","runtime"])
+            schema=movie_temp_schema)
 
 movie_df = movie_df.join(temp_df1,"Movie_ID","left")
 
