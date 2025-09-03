@@ -57,7 +57,7 @@ from pprint import pprint
 from pyspark.sql.types import StringType,StructField,StructType, \
     IntegerType, cast, ArrayType
 from pyspark.sql.functions import col, lit, desc,asc, year,\
-    when, explode, split, regexp_replace, udf
+    when, explode, split, regexp_replace, udf, substring, when, length
 from notebookutils import mssparkutils
 
 
@@ -110,7 +110,7 @@ from notebookutils import mssparkutils
 df_movie = spark.read.table(b_fact_movies)
 
 df_movie = df_movie.drop(col("Adult"),col("Video"))\
-        .withColumn("origin_country", df_movie.origin_country[0])\
+        .withColumn("origin_country", substring(df_movie.origin_country,2,2))\
         .withColumn("Movie_ID",df_movie.Movie_ID.cast("int"))\
         .withColumn("Release_Date",df_movie.Release_Date.cast("date"))\
         .withColumn("Popularity",df_movie.Popularity.cast("float"))\
@@ -138,7 +138,7 @@ df_movie.write.format("delta").mode("overwrite")\
 # Transform TV show data from Bronze to Silver layer
 # - Drops unnecessary columns, extracts country code, casts types
 
-df_tv = spark.read.table(b_fact_tv)
+df_tv = spark.read.table("Bronze_LH.fact_tv").limit(200)
 
 df_tv = df_tv.drop(col("Adult"))\
         .withColumn("Origin_Country", df_tv.Origin_Country.substr(3,2))\
@@ -148,8 +148,8 @@ df_tv = df_tv.drop(col("Adult"))\
         .withColumn("Popularity",df_tv.Popularity.cast("float"))\
         .withColumn("Vote_Average",df_tv.Vote_Average.cast("float"))\
         .withColumn("Vote_Count",df_tv.Vote_Count.cast("float"))
-
-df_tv.write.format("delta").option("overwriteSchema",True).mode("overwrite").saveAsTable(s_fact_tv)
+display(df_tv)
+#df_tv.write.format("delta").option("overwriteSchema",True).mode("overwrite").saveAsTable(s_fact_tv)
 
 
 # METADATA ********************
