@@ -149,7 +149,7 @@ df_tv = df_tv.drop(col("Adult"))\
         .withColumn("Vote_Average",df_tv.Vote_Average.cast("float"))\
         .withColumn("Vote_Count",df_tv.Vote_Count.cast("float"))
 display(df_tv)
-#df_tv.write.format("delta").option("overwriteSchema",True).mode("overwrite").saveAsTable(s_fact_tv)
+df_tv.write.format("delta").option("overwriteSchema",True).mode("overwrite").saveAsTable(s_fact_tv)
 
 
 # METADATA ********************

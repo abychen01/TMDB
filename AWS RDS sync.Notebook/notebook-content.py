@@ -54,8 +54,8 @@ print(tables_list)
 
 # CELL ********************
 
-df2 = spark.read.option("headers",True).csv("Files/creds")
-password = df2.collect()[1]['_c0']
+df2 = spark.read.parquet("Files/creds")
+password = df2.collect()[0]['password']
 
 db = "TMDB"
 
