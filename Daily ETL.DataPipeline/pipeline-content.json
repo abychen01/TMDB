@@ -257,7 +257,7 @@
             },
             "g_fact_movie": {
               "value": {
-                "value": "@json(activity('Bronze fact').output.result.exitValue).g_fact_movie",
+                "value": "@json(activity('Bronze fact').output.result.exitValue).g_fact_movies",
                 "type": "Expression"
               },
               "type": "string"
