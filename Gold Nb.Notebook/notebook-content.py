@@ -126,7 +126,7 @@ if date.today().day in (15,28):
                 .mode("overwrite").saveAsTable(g_countries)
 
         spark.read.table(s_languages).write.format("delta")\
-                .mode("overwrite").saveAsTable(g_languages)
+                .mode("overwrite").option("overwriteSchema",True).saveAsTable(g_languages)
 
         spark.read.table(s_genre_combined).write\
                 .format("delta").mode("overwrite").saveAsTable(g_genre_combined)

@@ -181,13 +181,12 @@ for page_no in range(1,400):
         continue
 
 
-movie_df = spark.createDataFrame(movies_list,schema=movie_schema)
+movie_df1 = spark.createDataFrame(movies_list,schema=movie_schema)
 
-movie_df = movie_df.sort(desc(col("Vote_Count")))
-movie_df = movie_df.drop_duplicates(["Movie_ID"])
+movie_df1 = movie_df1.sort(desc(col("Vote_Count")))
+movie_df1 = movie_df1.drop_duplicates(["Movie_ID"])
 
-movie_df.write.format("delta").mode("overwrite")\
-        .saveAsTable("temp_fact_movies")
+#movie_df.write.format("delta").mode("overwrite").saveAsTable("temp_fact_movies")
 
 
 
@@ -203,11 +202,11 @@ movie_df.write.format("delta").mode("overwrite")\
 # Enrich temporary movie data with additional details (budget, revenue, etc.)
 # - Fetches details for each movie and updates the temporary table
 
-movie_df2 = spark.read.table("temp_fact_movies")
-count = movie_df2.count()
+#movie_df2 = spark.read.table("temp_fact_movies")
+count = movie_df1.count()
 
 #creating a list called rows to make it iterable
-rows = movie_df2.take(count)
+rows = movie_df1.take(count)
 
 movie_data1 = []
 
@@ -235,10 +234,9 @@ for index, row in enumerate(rows):
 temp_df1 = spark.createDataFrame(movie_data1,\
             ["Movie_ID","budget","imdb_id","origin_country","revenue","runtime"])
 
-movie_df2 = movie_df2.join(temp_df1,"Movie_ID","left")
+movie_df1 = movie_df1.join(temp_df1,"Movie_ID","left")
 
-movie_df2.write.format("delta").mode("overwrite")\
-        .option("overwriteSchema",True).saveAsTable("temp_fact_movies")
+#movie_df2.write.format("delta").mode("overwrite").option("overwriteSchema",True).saveAsTable("temp_fact_movies")
 
 # METADATA ********************
 
@@ -258,9 +256,9 @@ movie_df2.write.format("delta").mode("overwrite")\
 # Enrich temporary movie data with cast information (lead actor and gender)
 # - Fetches cast details and updates the temporary table
 
-movie_df3 = spark.read.table("temp_fact_movies")
-count2 = movie_df3.count()
-rows = movie_df3.take(count2)
+#movie_df3 = spark.read.table("temp_fact_movies")
+count2 = movie_df1.count()
+rows = movie_df1.take(count2)
 movie_data2 = []
 
 for index, row in enumerate(rows):
@@ -287,10 +285,10 @@ for index, row in enumerate(rows):
         print(e)
 
 actor_df = spark.createDataFrame(movie_data2,["Movie_ID","Name","Gender"])
-movie_df3 = movie_df3.join(actor_df,"Movie_ID","left")
+movie_df1 = movie_df1.join(actor_df,"Movie_ID","left")
 
-movie_df3.write.format("delta").mode("overwrite")\
-        .option("overwriteSchema",True).saveAsTable("temp_fact_movies")
+movie_df1.write.format("delta").mode("overwrite")\
+    .option("overwriteSchema",True).saveAsTable(bronze_dict['b_fact_movies'])
 
 # METADATA ********************
 
@@ -303,7 +301,7 @@ movie_df3.write.format("delta").mode("overwrite")\
 
 # Merge enriched movie data into the Bronze layer fact_movies table
 # - Deduplicates, merges updates, and inserts new records
-
+'''
 from delta.tables import DeltaTable
 from pyspark.sql.functions import col, desc
 
@@ -353,7 +351,7 @@ try:
     
 except Exception as e:
     print(f"Merge failed: {e}")
-
+'''
 
 # METADATA ********************
 
@@ -409,8 +407,7 @@ tv_df = spark.createDataFrame(tv_list,schema = tv_schema)
 tv_df = tv_df.sort(desc(col("Vote_Count")))
 tv_df = tv_df.drop_duplicates(["TV_ID"])
 
-tv_df.write.format("delta").mode("overwrite")\
-        .saveAsTable("temp_fact_tv")
+#tv_df.write.format("delta").mode("overwrite").saveAsTable("temp_fact_tv")
 
 
 # METADATA ********************
@@ -420,43 +417,15 @@ tv_df.write.format("delta").mode("overwrite")\
 # META   "language_group": "synapse_pyspark"
 # META }
 
-# MARKDOWN ********************
-
-#     {
-#       "adult": false,
-#       "backdrop_path": "/hqqdoXdrp4o8ZqADHVYIXwBkn3Y.jpg",
-#       "genre_ids": [
-#         10759,
-#         16,
-#         35,
-#         10765,
-#         10762,
-#         10751
-#       ],
-#       "id": 65733,
-#       "origin_country": [
-#         "JP"
-#       ],
-#       "original_language": "ja",
-#       "original_name": "ドラえもん",
-#       "overview": "Robotic cat Doraemon is sent back in time from the 22nd century to protect 10-year-old Noby, a lazy and uncoordinated boy who is destined to have a tragic future. Doraemon can create secret gadgets from a pocket on his stomach, but they usually cause more bad than good because of Noby's propensity to misuse them.",
-#       "popularity": 126.2166,
-#       "poster_path": "/9ZN1P32SHviL3SV51qLivxycvcx.jpg",
-#       "first_air_date": "2005-04-22",
-#       "name": "Doraemon",
-#       "vote_average": 8.018,
-#       "vote_count": 190
-#     },
-
 # CELL ********************
 
 # Enrich temporary TV show data with additional details (runtime, seasons, etc.)
 # - Fetches details for each TV show and updates the temporary table
 
 tv2_list = []
-tv2_df = spark.read.table("temp_fact_tv")
-count = tv2_df.count()
-rows = tv2_df.take(count)
+#tv2_df = spark.read.table("temp_fact_tv")
+count = tv_df.count()
+rows = tv_df.take(count)
 
 for index, row in enumerate(rows):
     
@@ -482,11 +451,9 @@ for index, row in enumerate(rows):
 temptv_df = spark.createDataFrame(tv2_list,\
             ["TV_ID","episode_run_time","number_of_seasons","type","number_of_episodes"])
 
-tv2_df = tv2_df.join(temptv_df,"TV_ID","left")
+tv_df = tv_df.join(temptv_df,"TV_ID","left")
 
-tv2_df.write.format("delta").mode("overwrite")\
-            .option("overwriteSchema",True).saveAsTable("temp_fact_tv")
-
+tv_df.write.format("delta").mode("overwrite").saveAsTable(bronze_dict['b_fact_tv'])
 
 # METADATA ********************
 
@@ -499,6 +466,7 @@ tv2_df.write.format("delta").mode("overwrite")\
 
 # Merge enriched TV show data into the Bronze layer fact_tv table
 # - Deduplicates, merges updates, and inserts new records
+'''
 
 # Read tables
 tv_df4 = spark.read.table(bronze_dict['b_fact_tv'])
@@ -547,6 +515,7 @@ try:
 except Exception as e:
     print(f"Merge failed: {e}")
 
+'''
 
 # METADATA ********************
 

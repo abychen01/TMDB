@@ -110,7 +110,7 @@ import json
 df_movie = spark.read.table(b_fact_movies)
 
 df_movie = df_movie.drop(col("Adult"),col("Video"))\
-        .withColumn("origin_country", substring(df_movie.origin_country,2,2))\
+        .withColumn("origin_country", df_movie.origin_country[0])\
         .withColumn("Movie_ID",df_movie.Movie_ID.cast("int"))\
         .withColumn("Release_Date",df_movie.Release_Date.cast("date"))\
         .withColumn("Popularity",df_movie.Popularity.cast("float"))\
