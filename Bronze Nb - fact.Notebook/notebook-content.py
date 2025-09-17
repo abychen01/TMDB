@@ -297,6 +297,10 @@ movie_df1.write.format("delta").mode("overwrite")\
 # META   "language_group": "synapse_pyspark"
 # META }
 
+# MARKDOWN ********************
+
+# ##### MOVIE MERGE
+
 # CELL ********************
 
 # Merge enriched movie data into the Bronze layer fact_movies table
@@ -360,6 +364,10 @@ except Exception as e:
 # META   "language_group": "synapse_pyspark"
 # META }
 
+# MARKDOWN ********************
+
+# ##### TV INITIAL
+
 # CELL ********************
 
 # Fetch initial TV show data from TMDB API for 2025 and store in a temporary table
@@ -417,6 +425,10 @@ tv_df = tv_df.drop_duplicates(["TV_ID"])
 # META   "language_group": "synapse_pyspark"
 # META }
 
+# MARKDOWN ********************
+
+# ##### TV ADD-ON
+
 # CELL ********************
 
 # Enrich temporary TV show data with additional details (runtime, seasons, etc.)
@@ -461,6 +473,10 @@ tv_df.write.format("delta").mode("overwrite").saveAsTable(bronze_dict['b_fact_tv
 # META   "language": "python",
 # META   "language_group": "synapse_pyspark"
 # META }
+
+# MARKDOWN ********************
+
+# ###### TV MERGE
 
 # CELL ********************
 
@@ -554,3 +570,181 @@ mssparkutils.notebook.exit(json.dumps(output))
 #         print(f"Successfully dropped table: {table_name}")
 #     except Exception as e:
 #         print(f"Failed to drop table {table_name}: {str(e)}")
+
+# CELL ********************
+
+import requests
+
+
+
+headers = {
+    "accept": "application/json",
+    "Authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwMmZjZGM2ZGQxZmIxOTNlNjQ2MjU5MGU0ZmUwZWM2NCIsIm5iZiI6MTc1MTg4OTMxNy45ODIsInN1YiI6IjY4NmJiNWE1NzFiNzVhZDM3NGE5NWJmZiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.DrBLlqA8g9mlH2zJC0c60vogL1jmcGNH2oMdg2qhP3s"
+}
+movies_list = []
+
+for page_no in range(1,5000):
+    
+    url = f"https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&\
+        language=en-US&page={page_no}&sort_by=revenue.desc"
+
+    try:
+        response = requests.get(url, headers=headers)
+        if response.status_code == 200:
+            #print("success")
+            results = response.json()['results']
+
+            for movie in results:
+                movie_dict = {
+                            "Adult": str(movie.get("adult", "N/A")),
+                            "Backdrop_Path": str(movie.get("backdrop_path", "N/A")),
+                            "Genre_IDs": str(movie.get("genre_ids", "N/A")),
+                            "Movie_ID": str(movie.get("id", "N/A")),
+                            "Original_Language": str(movie.get("original_language", "N/A")),
+                            "Original_Title": str(movie.get("original_title", "N/A")),
+                            "Overview": str(movie.get("overview", "N/A")),
+                            "Popularity": str(movie.get("popularity", "N/A")),
+                            "Poster_Path": str(movie.get("poster_path", "N/A")),
+                            "Release_Date": str(movie.get("release_date", "N/A")),
+                            "Title": str(movie.get("title", "N/A")),
+                            "Video": str(movie.get("video", "N/A")),
+                            "Vote_Average": str(movie.get("vote_average", "N/A")),
+                            "Vote_Count": str(movie.get("vote_count", "N/A"))
+                }
+                movies_list.append(movie_dict)
+
+        else:
+            print(f"Fail.....{response.status_code} || {response.text}")
+
+    except Exception as e:
+        print(f"Page {page_no}: Error while calling API: {e}")
+        continue
+
+
+movie_df1 = spark.createDataFrame(movies_list,schema=movie_schema)
+
+movie_df1 = movie_df1.sort(desc(col("Vote_Count")))
+movie_df1 = movie_df1.drop_duplicates(["Movie_ID"])
+display(movie_df1)
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+#movie_df2 = spark.read.table("temp_fact_movies")
+count = movie_df1.count()
+
+#creating a list called rows to make it iterable
+rows = movie_df1.take(count)
+
+movie_data1 = []
+
+for index, row in enumerate(rows):
+    movie_id = row.Movie_ID
+    url = f"https://api.themoviedb.org/3/movie/{movie_id}?language=en-US"
+    
+    try:
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()  # Check for HTTP errors
+        data = response.json()
+        
+        budget = data.get("budget", 0)
+        imdb_id = data.get("imdb_id","N/A")
+        origin_country = data.get("origin_country","N/A")
+        revenue = data.get('revenue',None)
+        runtime = data.get('runtime',None)
+        
+        movie_data1.append((movie_id,budget,imdb_id,origin_country,revenue,runtime))
+    
+
+    except Exception as e:
+        print(e)
+
+temp_df1 = spark.createDataFrame(movie_data1,\
+            ["Movie_ID","budget","imdb_id","origin_country","revenue","runtime"])
+
+movie_df1 = movie_df1.join(temp_df1,"Movie_ID","left")
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+count2 = movie_df1.count()
+rows = movie_df1.take(count2)
+movie_data2 = []
+
+for index, row in enumerate(rows):
+    movie_id = row.Movie_ID
+
+    url = f"https://api.themoviedb.org/3/movie/{movie_id}/credits?language=en-US"
+
+    try:
+        response = requests.get(url,headers=headers)
+        response.raise_for_status()
+
+        data = response.json()
+
+        if data.get("cast") and len(data["cast"]) > 0:
+            name = data["cast"][0].get("name", "N/A")
+            gender = data["cast"][0].get("gender", "N/A")
+        else:
+            name = "N/A"
+            gender = "N/A"
+
+        movie_data2.append((movie_id,name,gender))
+
+    except Exception as e:
+        print(e)
+
+actor_df = spark.createDataFrame(movie_data2,["Movie_ID","Name","Gender"])
+movie_df1 = movie_df1.join(actor_df,"Movie_ID","left")
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+print(movie_df1.count())
+display(movie_df1.sort(desc(col("revenue"))))
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+movie_df1.write.format("delta").mode("overwrite").saveAsTable("temp")
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
