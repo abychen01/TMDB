@@ -4,6 +4,9 @@ This project is a data engineering pipeline that collects movie and TV show data
 
 [Power BI report](https://app.fabric.microsoft.com/view?r=eyJrIjoiNzQwZDZlMWItZDE1Ni00NmZjLWI4NTItZTM0ZTNkZGMxNGQ4IiwidCI6IjZkYWRkOGM5LTMxMGEtNGE2Ni05MzRhLWQ5MGI1OTk5YjViMCJ9)
 
+
+<iframe title="TMDB" width="600" height="373.5" src="https://app.fabric.microsoft.com/view?r=eyJrIjoiNzQwZDZlMWItZDE1Ni00NmZjLWI4NTItZTM0ZTNkZGMxNGQ4IiwidCI6IjZkYWRkOGM5LTMxMGEtNGE2Ni05MzRhLWQ5MGI1OTk5YjViMCJ9" frameborder="0" allowFullScreen="true"></iframe>
+
 ## Project Overview
 
 The pipeline fetches data such as movies, TV shows, genres, countries, and languages from the TMDB API for the year 2025. The data is processed and stored in Lakehouses (LH) following the medallion architecture:
