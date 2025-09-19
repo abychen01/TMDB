@@ -20,6 +20,14 @@
 # META   }
 # META }
 
+# MARKDOWN ********************
+
+# ##### 
+
+# MARKDOWN ********************
+
+# ##### Table defs
+
 # CELL ********************
 
 # Define dictionaries for table names across Bronze, Silver, and Gold Lakehouses
@@ -59,13 +67,17 @@ gold_dict = {
 # META   "language_group": "synapse_pyspark"
 # META }
 
+# MARKDOWN ********************
+
+# ##### Imports
+
 # CELL ********************
 
 # Import libraries for API requests, data processing, and Delta table operations
 
 import requests, time, json
 from pprint import pprint
-from pyspark.sql.types import StringType,StructField,StructType, IntegerType
+from pyspark.sql.types import StringType,StructField,StructType, IntegerType, FloatType, LongType, BooleanType
 from pyspark.sql.functions import col, lit, desc,asc, year, row_number, count
 from notebookutils import mssparkutils
 from delta.tables import DeltaTable
@@ -78,42 +90,59 @@ from pyspark.sql.window import Window
 # META   "language_group": "synapse_pyspark"
 # META }
 
+# MARKDOWN ********************
+
+# ##### Schema defs
+
 # CELL ********************
 
 # Define schemas for movie and TV show tables
 
 movie_schema = StructType([
-    StructField("Adult", StringType(), True),
-    StructField("Backdrop_Path", StringType(), True),
-    StructField("Genre_IDs", StringType(), True),
-    StructField("Movie_ID", StringType(), True),
+    StructField("Adult", BooleanType(), True),                 
+    StructField("Backdrop_Path", StringType(), True),       
+    StructField("Genre_IDs", StringType(), True),            
+    StructField("Movie_ID", IntegerType(), True),
+    StructField("IMDB_ID", StringType(), True),
     StructField("Original_Language", StringType(), True),
+    StructField("Origin_Country", StringType(), True),
     StructField("Original_Title", StringType(), True),
     StructField("Overview", StringType(), True),
-    StructField("Popularity", StringType(), True),
+    StructField("Popularity", FloatType(), True),
     StructField("Poster_Path", StringType(), True),
-    StructField("Release_Date", StringType(), True),
+    StructField("Release_Date", StringType(), True),          
+    StructField("Revenue", LongType(), True),
+    StructField("Runtime", IntegerType(), True),
+    StructField("Budget", LongType(), True),
+    StructField("Status", StringType(), True),
     StructField("Title", StringType(), True),
-    StructField("Video", StringType(), True),
-    StructField("Vote_Average", StringType(), True),
-    StructField("Vote_Count", StringType(), True)
+    StructField("Video", StringType(), True),                 
+    StructField("Vote_Average", FloatType(), True),
+    StructField("Vote_Count", IntegerType(), True)
 ])
 
 tv_schema = StructType([
-    StructField("Adult", StringType(), True),
+    StructField("Adult", BooleanType(), True),
     StructField("Backdrop_Path", StringType(), True),
+    StructField("Episode_Run_Time", IntegerType(), True),
     StructField("First_Air_Date", StringType(), True),
-    StructField("Genre_IDs", StringType(), True),
-    StructField("TV_ID", StringType(), True),
+    StructField("Genres", StringType(), True),
+    StructField("TV_ID", IntegerType(), True),
+    StructField("In_Production", BooleanType(), True),
+    StructField("Last_Air_Date", StringType(), True),
     StructField("Name", StringType(), True),
+    StructField("Number_Of_Episodes", IntegerType(), True),
+    StructField("Number_Of_Seasons", IntegerType(), True),
     StructField("Origin_Country", StringType(), True),
     StructField("Original_Language", StringType(), True),
     StructField("Original_Name", StringType(), True),
     StructField("Overview", StringType(), True),
-    StructField("Popularity", StringType(), True),
+    StructField("Popularity", FloatType(), True),
     StructField("Poster_Path", StringType(), True),
-    StructField("Vote_Average", StringType(), True),
-    StructField("Vote_Count", StringType(), True)
+    StructField("Status", StringType(), True),
+    StructField("Type", StringType(), True),
+    StructField("Vote_Average", FloatType(), True),
+    StructField("Vote_Count", IntegerType(), True)
 ])
 
 # METADATA ********************
@@ -122,6 +151,10 @@ tv_schema = StructType([
 # META   "language": "python",
 # META   "language_group": "synapse_pyspark"
 # META }
+
+# MARKDOWN ********************
+
+# ##### API Header def
 
 # CELL ********************
 
@@ -142,7 +175,7 @@ headers = {
 # CELL ********************
 
 # Fetch initial movie data from TMDB API and store in a temporary table
-
+'''
 movies_list = []
 
 for page_no in range(1,400):
@@ -188,7 +221,7 @@ movie_df1 = movie_df1.drop_duplicates(["Movie_ID"])
 
 #movie_df.write.format("delta").mode("overwrite").saveAsTable("temp_fact_movies")
 
-
+'''
 
 # METADATA ********************
 
@@ -201,7 +234,7 @@ movie_df1 = movie_df1.drop_duplicates(["Movie_ID"])
 
 # Enrich temporary movie data with additional details (budget, revenue, etc.)
 # - Fetches details for each movie and updates the temporary table
-
+'''
 #movie_df2 = spark.read.table("temp_fact_movies")
 count = movie_df1.count()
 
@@ -237,6 +270,7 @@ temp_df1 = spark.createDataFrame(movie_data1,\
 movie_df1 = movie_df1.join(temp_df1,"Movie_ID","left")
 
 #movie_df2.write.format("delta").mode("overwrite").option("overwriteSchema",True).saveAsTable("temp_fact_movies")
+'''
 
 # METADATA ********************
 
@@ -255,7 +289,7 @@ movie_df1 = movie_df1.join(temp_df1,"Movie_ID","left")
 
 # Enrich temporary movie data with cast information (lead actor and gender)
 # - Fetches cast details and updates the temporary table
-
+'''
 #movie_df3 = spark.read.table("temp_fact_movies")
 count2 = movie_df1.count()
 rows = movie_df1.take(count2)
@@ -289,6 +323,8 @@ movie_df1 = movie_df1.join(actor_df,"Movie_ID","left")
 
 movie_df1.write.format("delta").mode("overwrite")\
     .option("overwriteSchema",True).saveAsTable(bronze_dict['b_fact_movies'])
+
+    '''
 
 # METADATA ********************
 
@@ -372,7 +408,7 @@ except Exception as e:
 
 # Fetch initial TV show data from TMDB API for 2025 and store in a temporary table
 # - Fetches data across multiple pages, sorts, removes duplicates, and saves
-
+'''
 #url = "https://api.themoviedb.org/3/discover/tv?first_air_date_year=2025&include_adult=false&include_null_first_air_dates=false&language=en-US&page=1&sort_by=popularity.desc"
 tv_list = []
 
@@ -417,6 +453,7 @@ tv_df = tv_df.drop_duplicates(["TV_ID"])
 
 #tv_df.write.format("delta").mode("overwrite").saveAsTable("temp_fact_tv")
 
+'''
 
 # METADATA ********************
 
@@ -433,7 +470,7 @@ tv_df = tv_df.drop_duplicates(["TV_ID"])
 
 # Enrich temporary TV show data with additional details (runtime, seasons, etc.)
 # - Fetches details for each TV show and updates the temporary table
-
+'''
 tv2_list = []
 #tv2_df = spark.read.table("temp_fact_tv")
 count = tv_df.count()
@@ -466,6 +503,7 @@ temptv_df = spark.createDataFrame(tv2_list,\
 tv_df = tv_df.join(temptv_df,"TV_ID","left")
 
 tv_df.write.format("delta").mode("overwrite").saveAsTable(bronze_dict['b_fact_tv'])
+'''
 
 # METADATA ********************
 
@@ -544,10 +582,11 @@ except Exception as e:
 
 # Combine all dictionaries and exit the notebook with output
 # - Merges Bronze, Silver, and Gold dictionaries for pipeline reference
-
+'''
 output = bronze_dict | silver_dict | gold_dict
 
 mssparkutils.notebook.exit(json.dumps(output))
+'''
 
 # METADATA ********************
 
@@ -573,59 +612,62 @@ mssparkutils.notebook.exit(json.dumps(output))
 
 # CELL ********************
 
-import requests
+#testing....
 
-
-
-headers = {
-    "accept": "application/json",
-    "Authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwMmZjZGM2ZGQxZmIxOTNlNjQ2MjU5MGU0ZmUwZWM2NCIsIm5iZiI6MTc1MTg4OTMxNy45ODIsInN1YiI6IjY4NmJiNWE1NzFiNzVhZDM3NGE5NWJmZiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.DrBLlqA8g9mlH2zJC0c60vogL1jmcGNH2oMdg2qhP3s"
-}
 movies_list = []
+fail_count = 0
 
-for page_no in range(1,5000):
-    
-    url = f"https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&\
-        language=en-US&page={page_no}&sort_by=revenue.desc"
+for id in range(1,15212351):
+
+    url = f"https://api.themoviedb.org/3/movie/{id}?language=en-US"
 
     try:
         response = requests.get(url, headers=headers)
         if response.status_code == 200:
-            #print("success")
-            results = response.json()['results']
-
-            for movie in results:
-                movie_dict = {
-                            "Adult": str(movie.get("adult", "N/A")),
-                            "Backdrop_Path": str(movie.get("backdrop_path", "N/A")),
-                            "Genre_IDs": str(movie.get("genre_ids", "N/A")),
-                            "Movie_ID": str(movie.get("id", "N/A")),
-                            "Original_Language": str(movie.get("original_language", "N/A")),
-                            "Original_Title": str(movie.get("original_title", "N/A")),
-                            "Overview": str(movie.get("overview", "N/A")),
-                            "Popularity": str(movie.get("popularity", "N/A")),
-                            "Poster_Path": str(movie.get("poster_path", "N/A")),
-                            "Release_Date": str(movie.get("release_date", "N/A")),
-                            "Title": str(movie.get("title", "N/A")),
-                            "Video": str(movie.get("video", "N/A")),
-                            "Vote_Average": str(movie.get("vote_average", "N/A")),
-                            "Vote_Count": str(movie.get("vote_count", "N/A"))
+            data = response.json()
+            #pprint(data)
+            
+            movie_dict = {
+                    "Adult": data.get("adult", False),
+                    "Backdrop_Path": data.get("backdrop_path", None),
+                    "Genre_IDs": data.get("genre_ids", []),
+                    "Movie_ID": data.get("id", 0),
+                    "IMDB_ID": data.get("imdb_id", None),
+                    "Original_Language": data.get("original_language", None),
+                    "Origin_Country": data.get("origin_country", []),
+                    "Original_Title": data.get("original_title", None),
+                    "Overview": data.get("overview", None),
+                    "Popularity": data.get("popularity", 0.0),
+                    "Poster_Path": data.get("poster_path", None),
+                    "Release_Date": data.get("release_date", None),
+                    "Revenue": data.get("revenue", 0),
+                    "Runtime": data.get("runtime", 0),
+                    "Budget": data.get("budget", 0),
+                    "Status": data.get("status", None),
+                    "Title": data.get("title", None),
+                    "Video": data.get("video", False),
+                    "Vote_Average": data.get("vote_average", 0.0),
+                    "Vote_Count": data.get("vote_count", 0)
                 }
-                movies_list.append(movie_dict)
+
+            movies_list.append(movie_dict)
+                
+            #print(f"{id} .............. done")
 
         else:
-            print(f"Fail.....{response.status_code} || {response.text}")
+            #print(f"{id} ........ fail")
+            #print(f"Fail.....{response.status_code} || {response.text}")
+            fail_count = fail_count + 1
 
     except Exception as e:
-        print(f"Page {page_no}: Error while calling API: {e}")
+        print(e)
         continue
 
 
 movie_df1 = spark.createDataFrame(movies_list,schema=movie_schema)
-
-movie_df1 = movie_df1.sort(desc(col("Vote_Count")))
-movie_df1 = movie_df1.drop_duplicates(["Movie_ID"])
+print(fail_count)
 display(movie_df1)
+
 
 # METADATA ********************
 
@@ -636,39 +678,7 @@ display(movie_df1)
 
 # CELL ********************
 
-#movie_df2 = spark.read.table("temp_fact_movies")
-count = movie_df1.count()
-
-#creating a list called rows to make it iterable
-rows = movie_df1.take(count)
-
-movie_data1 = []
-
-for index, row in enumerate(rows):
-    movie_id = row.Movie_ID
-    url = f"https://api.themoviedb.org/3/movie/{movie_id}?language=en-US"
-    
-    try:
-        response = requests.get(url, headers=headers)
-        response.raise_for_status()  # Check for HTTP errors
-        data = response.json()
-        
-        budget = data.get("budget", 0)
-        imdb_id = data.get("imdb_id","N/A")
-        origin_country = data.get("origin_country","N/A")
-        revenue = data.get('revenue',None)
-        runtime = data.get('runtime',None)
-        
-        movie_data1.append((movie_id,budget,imdb_id,origin_country,revenue,runtime))
-    
-
-    except Exception as e:
-        print(e)
-
-temp_df1 = spark.createDataFrame(movie_data1,\
-            ["Movie_ID","budget","imdb_id","origin_country","revenue","runtime"])
-
-movie_df1 = movie_df1.join(temp_df1,"Movie_ID","left")
+movie_df1.write.format("delta").mode("overwrite").option("mergeSchema", True).saveAsTable("temp")
 
 # METADATA ********************
 
@@ -708,6 +718,7 @@ for index, row in enumerate(rows):
 
 actor_df = spark.createDataFrame(movie_data2,["Movie_ID","Name","Gender"])
 movie_df1 = movie_df1.join(actor_df,"Movie_ID","left")
+movie_df1.write.format("delta").mode("overwrite").option("mergeSchema", True).saveAsTable("temp")
 
 # METADATA ********************
 
@@ -718,8 +729,6 @@ movie_df1 = movie_df1.join(actor_df,"Movie_ID","left")
 
 # CELL ********************
 
-print(movie_df1.count())
-display(movie_df1.sort(desc(col("revenue"))))
 
 # METADATA ********************
 
@@ -730,7 +739,6 @@ display(movie_df1.sort(desc(col("revenue"))))
 
 # CELL ********************
 
-movie_df1.write.format("delta").mode("overwrite").saveAsTable("temp")
 
 # METADATA ********************
 
@@ -741,6 +749,57 @@ movie_df1.write.format("delta").mode("overwrite").saveAsTable("temp")
 
 # CELL ********************
 
+#testing....
+'''
+tv_list = []
+fail_count = 0
+
+# max = 199989
+
+for id in range(1,100):
+
+    url = f"https://api.themoviedb.org/3/tv/{id}?language=en-US"
+
+    try:
+        response = requests.get(url, headers=headers)
+        if response.status_code == 200:
+            data = response.json()
+            #pprint(data)
+            
+            tv_dict = {
+                "Adult": data.get("adult", False),
+                "Backdrop_Path": data.get("backdrop_path", None),
+                "Episode_Run_Time": data.get("episode_run_time", []),
+                "First_Air_Date": data.get("first_air_date", None),
+                "Genres": data.get("genres", []),
+                "TV_ID": data.get("id", 0),
+                "In_Production": data.get("in_production", False),
+                "Last_Air_Date": data.get("last_air_date", None),
+                "Last_Episode_To_Air": data.get("last_episode_to_air", {}),
+                "Name": data.get("name", None),
+                "Number_Of_Episodes": data.get("number_of_episodes", 0),
+                "Number_Of_Seasons": data.get("number_of_seasons", 0),
+                "Origin_Country": data.get("origin_country", []),
+                "Original_Language": data.get("original_language", None),
+                "Original_Name": data.get("original_name", None),
+                "Overview": data.get("overview", None),
+                "Popularity": data.get("popularity", 0.0),
+                "Poster_Path": data.get("poster_path", None),
+                "Status": data.get("status", None),
+                "Type": data.get("type", None),
+                "Vote_Average": data.get("vote_average", 0.0),
+                "Vote_Count": data.get("vote_count", 0)
+            }
+            tv_list.append(tv_dict)
+
+    except Exception as e:
+        print(f"Fail.....{e} || ")
+
+tv_df = spark.createDataFrame(tv_list,schema = tv_schema)
+
+print(fail_count)
+display(tv_df)
+'''
 
 # METADATA ********************
 
