@@ -17,6 +17,9 @@
 # META         },
 # META         {
 # META           "id": "ad0ef244-eccd-4390-9f4a-899dd2b819f3"
+# META         },
+# META         {
+# META           "id": "5f908ebc-d61f-4264-97d2-eaa9e2d1b9c3"
 # META         }
 # META       ]
 # META     }
@@ -52,7 +55,7 @@ s_languages = ""
 # Import libraries for Spark operations, date handling
 
 from pyspark.sql.types import cast
-from pyspark.sql.functions import col, when, substring
+from pyspark.sql.functions import col, when, substring, year, length
 from datetime import date
 from notebookutils import mssparkutils
 import json
@@ -135,22 +138,108 @@ df_movie.write.format("delta").mode("overwrite")\
 
 # CELL ********************
 
+#testing....
+
+df_movie = spark.read.table("Bronze_LH.temp")
+#display(df_movie)
+
+
+df_movie = df_movie.drop(col("Adult"),col("Video"))
+
+cols_list = [c for c in df_movie.columns if c not in ['Origin_Country','Movie_ID','Release_Date',\
+                'Popularity','Vote_Average','Vote_Count']]
+
+df_movie = df_movie.select(
+            *[col(c) for c in cols_list],
+            substring(df_movie.Origin_Country,2,2).alias('Origin_Country'),
+            df_movie.Movie_ID.cast("int").alias('Movie_ID'),
+            df_movie.Release_Date.cast("date").alias('Release_Date'),
+            df_movie.Popularity.cast("float").alias('Popularity'),
+            df_movie.Vote_Average.cast("float").alias('Vote_Average'),
+            df_movie.Vote_Count.cast("float").alias('Vote_Count')
+)
+
+df_movie.write.format("delta").mode("overwrite")\
+        .option("overwriteSchema",True).saveAsTable("fact_movies")
+
+''' 
+
+.withColumn("Gender", when(df_movie.Gender == 0,"N/A")\
+                                .when(df_movie.Gender == 1,"Female")\
+                                .when(df_movie.Gender == 2,"Male"))
+'''
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
 # Transform TV show data from Bronze to Silver layer
 # - Drops unnecessary columns, extracts country code, casts types
 
-df_tv = spark.read.table(b_fact_tv)
+df_tv = spark.read.table("fact_tv")
 
-df_tv = df_tv.drop(col("Adult"))\
-        .withColumn("Origin_Country", df_tv.Origin_Country.substr(3,2))\
-        .withColumn("episode_run_time", df_tv.episode_run_time[0])\
-        .withColumn("TV_ID",df_tv.TV_ID.cast("int"))\
-        .withColumn("First_Air_Date",df_tv.First_Air_Date.cast("date"))\
-        .withColumn("Popularity",df_tv.Popularity.cast("float"))\
-        .withColumn("Vote_Average",df_tv.Vote_Average.cast("float"))\
-        .withColumn("Vote_Count",df_tv.Vote_Count.cast("float"))
+cols_list = [c for c in df_tv.columns if c not in \
+                ['Origin_Country','Episode_Run_Time','TV_ID','First_Air_Date',\
+                'Popularity','Vote_Average','Vote_Count']]
 
-df_tv.write.format("delta").option("overwriteSchema",True).mode("overwrite").saveAsTable(s_fact_tv)
+df_tv = df_tv.select(
+                *[col(c) for c in cols_list],
+                df_tv.Origin_Country.substr(2,2).alias('Origin_Country'),
+                when(length(df_tv.Episode_Run_Time)>2, df_tv.Episode_Run_Time.substr(2,2))\
+                        .otherwise('').cast('int').alias('Episode_Run_Time'),
+                df_tv.TV_ID.cast("int").alias('TV_ID'), 
+                df_tv.First_Air_Date.cast("date").alias('First_Air_Date'),
+                df_tv.Popularity.cast("float").alias('Popularity'),
+                df_tv.Vote_Average.cast("float").alias('Vote_Average'),
+                df_tv.Vote_Count.cast("float").alias('Vote_Count')
 
+)
+df_tv.write.format("delta").option("overwriteSchema",True).mode("overwrite").saveAsTable('fact_tv')
+
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+#testing...
+
+df_genre_tv = spark.read.table('Bronze_LH.genre_tv').withColumnRenamed("id","tv_id")
+df_genre_movie = spark.read.table('Bronze_LH.genre_movie').withColumnRenamed("id","movie_id")
+
+
+df_join = df_genre_movie.join(df_genre_tv,"name","outer")
+df_genre = df_join.withColumn("id", when(col("movie_id").isNull(),df_join.tv_id)\
+                .otherwise(df_join.movie_id))
+
+df_genre = df_genre.drop(col("movie_id"),col("tv_id"))
+
+
+df_genre.write.format("delta").mode("overwrite").saveAsTable('Silver_LH.genre_combined')
+df_genre_tv.write.format("delta").mode("overwrite").saveAsTable('Silver_LH.genre_tv')
+df_genre_movie.write.format("delta").mode("overwrite").saveAsTable('Silver_LH.genre_movie')
+
+'''
+df_join = df_genre_movie.join(df_genre_tv,"name","outer")
+df_genre = df_join.withColumn("id", when(col("movie_id").isNull(),df_join.tv_id)\
+                .otherwise(df_join.movie_id))
+                
+df_genre = df_genre.drop(col("movie_id"),col("tv_id"))
+
+df_genre.write.format("delta").mode("overwrite").saveAsTable(s_genre_combined)
+df_genre_tv.write.format("delta").mode("overwrite").saveAsTable('Silver_LH.genre_tv')
+df_genre_movie.write.format("delta").mode("overwrite").saveAsTable('Silver_LH.genre_movie')
+
+'''
 
 # METADATA ********************
 
@@ -163,7 +252,7 @@ df_tv.write.format("delta").option("overwriteSchema",True).mode("overwrite").sav
 
 # Transform dimension tables on the 15th or 28th
 
-if date.today().day in (15,28):
+if True:#date.today().day in (15,28):
 
     df_countries = spark.read.table(b_countries)
     df_countries = df_countries.withColumnRenamed("iso_3166_1","country_id")

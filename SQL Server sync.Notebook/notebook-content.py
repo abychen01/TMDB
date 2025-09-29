@@ -36,7 +36,7 @@ from pyspark.sql.functions import col, desc, asc
 # CELL ********************
 
 tables_df = spark.sql("SHOW TABLES")
-tables_list = [row['tableName'] for row in tables_df.collect()]
+table_list = [row['tableName'] for row in tables_df.collect()]
 
 db = "TMDB"
 
@@ -82,15 +82,13 @@ with pyodbc.connect(conn_str_master, autocommit=True) as conn:
             IF NOT EXISTS (SELECT name from sys.databases WHERE name = ?)
                 BEGIN
                 SELECT ? + ' doesnt exists';
-                EXEC('CREATE DATABASE [' + ? + ']')
-                SELECT ? + ' Database created';
                 END
             ELSE
                 BEGIN
                 SELECT ? + ' exist';
                 END
         
-        """,db,db,db,db,db)
+        """,db,db,db)
 
         
         while True:
@@ -110,7 +108,24 @@ with pyodbc.connect(conn_str_master, autocommit=True) as conn:
 
 # CELL ********************
 
+def converts(datatype):
+    datatype = datatype.simpleString()
 
+    match datatype:
+        case "int":
+            return "INT"
+        case "string":
+            return "NVARCHAR(255)"  # Using NVARCHAR as requested
+        case "timestamp":
+            return "DATETIME"
+        case "double":
+            return "FLOAT"
+        case "boolean":
+            return "BIT"
+        case "decimal":
+            return "DECIMAL(18,2)"
+        case _:
+            return "NVARCHAR(255)"  # Default for unsupported types
 
 for table in table_list:
 

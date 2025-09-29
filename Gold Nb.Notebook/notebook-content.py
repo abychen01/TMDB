@@ -66,6 +66,34 @@ from datetime import date
 
 # CELL ********************
 
+#testing...
+
+# Update movie genre bridge table on the 15th or 28th
+# - Converts Genre_IDs to array, explodes it, and saves if condition met
+
+if True:
+
+    df_movie = spark.read.table('Silver_LH.fact_movies')
+
+    df_movie = df_movie.withColumn("Genre_IDs", \
+            split(regexp_replace(col("Genre_IDs"), "[\\[\\]]", ""),",\\s*")\
+            .cast(ArrayType(IntegerType())))\
+
+    df_movie_exp = df_movie.select("Movie_ID",explode(col("Genre_IDs")).alias("Genre_ID"))
+
+    df_movie_exp.write.format("delta").mode("overwrite").option("overwriteSchema",True).saveAsTable('Gold_LH.genre_movie_bridge')
+
+
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
 # Update movie genre bridge table on the 15th or 28th
 # - Converts Genre_IDs to array, explodes it, and saves if condition met
 
@@ -92,6 +120,32 @@ if date.today().day in (15,28):
 
 # CELL ********************
 
+#testing..
+# Update TV genre bridge table on the 15th or 28th
+# - Converts Genre_IDs to array, explodes it, and saves if condition met
+
+if True:
+
+    df_tv = spark.read.table('Silver_LH.fact_tv')
+    display(df_tv)
+    df_tv = df_tv\
+                .withColumn("Genres",split(regexp_replace(col("Genres"), "[\\[\\]]", ""),",\\s*")\
+                .cast(ArrayType(IntegerType())))
+
+
+    df_tv_bridge = df_tv.select("TV_ID",explode(col("Genres")).alias("Genres"))
+
+    df_tv_bridge.write.format("delta").mode("overwrite").option("overwriteSchema", "true").saveAsTable('Gold_LH.genre_tv_bridge')
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
 # Update TV genre bridge table on the 15th or 28th
 # - Converts Genre_IDs to array, explodes it, and saves if condition met
 
@@ -107,6 +161,24 @@ if date.today().day in (15,28):
     df_tv_bridge = df_tv.select("TV_ID",explode(col("Genre_IDs")).alias("Genre_IDs"))
 
     df_tv_bridge.write.format("delta").mode("overwrite").saveAsTable(g_genre_tv_bridge)
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+df_genre_tv = spark.read.table('Silver_LH.genre_tv')
+df_genre_movie = spark.read.table('Silver_LH.genre_movie')
+
+df_genre_tv.write.format("delta").mode("overwrite")\
+    .option("overwriteSchema", "true").saveAsTable('Gold_LH.genre_tv')
+
+df_genre_movie.write.format("delta").mode("overwrite")\
+    .option("overwriteSchema", "true").saveAsTable('Gold_LH.genre_movie')
 
 # METADATA ********************
 
@@ -143,14 +215,14 @@ if date.today().day in (15,28):
 
 # Copy fact tables from Silver to Gold layer daily
 
-df_fact_movies = spark.read.table(s_fact_movies)
-df_fact_tv = spark.read.table(s_fact_tv)
+df_fact_movies = spark.read.table('Silver_LH.fact_movies')
+df_fact_tv = spark.read.table('Silver_LH.fact_tv')
 
 df_fact_movies.write.format("delta").option("overwriteSchema",True)\
-                .mode("overwrite").saveAsTable(g_fact_movie)
+                .mode("overwrite").saveAsTable('Gold_LH.fact_movies')
 
 df_fact_tv.write.format("delta").option("overwriteSchema",True)\
-                .mode("overwrite").saveAsTable(g_fact_tv)
+                .mode("overwrite").saveAsTable('Gold_LH.fact_tv')
 
 # METADATA ********************
 
@@ -158,6 +230,19 @@ df_fact_tv.write.format("delta").option("overwriteSchema",True)\
 # META   "language": "python",
 # META   "language_group": "synapse_pyspark"
 # META }
+
+# MARKDOWN ********************
+
+# # Copy fact tables from Silver to Gold layer daily
+# 
+# df_fact_movies = spark.read.table(s_fact_movies)
+# df_fact_tv = spark.read.table(s_fact_tv)
+# 
+# df_fact_movies.write.format("delta").option("overwriteSchema",True)\
+#                 .mode("overwrite").saveAsTable(g_fact_movie)
+# 
+# df_fact_tv.write.format("delta").option("overwriteSchema",True)\
+#                 .mode("overwrite").saveAsTable(g_fact_tv)
 
 # MARKDOWN ********************
 

@@ -26,6 +26,22 @@
 
 # MARKDOWN ********************
 
+# ##### Parameters
+
+# PARAMETERS CELL ********************
+
+start = 0
+end = 500000
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# MARKDOWN ********************
+
 # ##### Table defs
 
 # CELL ********************
@@ -75,9 +91,10 @@ gold_dict = {
 
 # Import libraries for API requests, data processing, and Delta table operations
 
-import requests, time, json
+import requests, time, json, datetime
 from pprint import pprint
-from pyspark.sql.types import StringType,StructField,StructType, IntegerType, FloatType, LongType, BooleanType
+from pyspark.sql.types import StringType,StructField,StructType, \
+    IntegerType, FloatType, LongType, BooleanType, DateType
 from pyspark.sql.functions import col, lit, desc,asc, year, row_number, count
 from notebookutils import mssparkutils
 from delta.tables import DeltaTable
@@ -174,103 +191,10 @@ headers = {
 
 # CELL ********************
 
-# Fetch initial movie data from TMDB API and store in a temporary table
-'''
-movies_list = []
+#testing...
+testing = True
+date = datetime.date.today()
 
-for page_no in range(1,400):
-    url = f"https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page={page_no}&sort_by=popularity.desc&year=2025"
-
-    try:
-        response = requests.get(url, headers=headers)
-        if response.status_code == 200:
-            #print("success")
-            results = response.json()['results']
-
-            for movie in results:
-                movie_dict = {
-                            "Adult": str(movie.get("adult", "N/A")),
-                            "Backdrop_Path": str(movie.get("backdrop_path", "N/A")),
-                            "Genre_IDs": str(movie.get("genre_ids", "N/A")),
-                            "Movie_ID": str(movie.get("id", "N/A")),
-                            "Original_Language": str(movie.get("original_language", "N/A")),
-                            "Original_Title": str(movie.get("original_title", "N/A")),
-                            "Overview": str(movie.get("overview", "N/A")),
-                            "Popularity": str(movie.get("popularity", "N/A")),
-                            "Poster_Path": str(movie.get("poster_path", "N/A")),
-                            "Release_Date": str(movie.get("release_date", "N/A")),
-                            "Title": str(movie.get("title", "N/A")),
-                            "Video": str(movie.get("video", "N/A")),
-                            "Vote_Average": str(movie.get("vote_average", "N/A")),
-                            "Vote_Count": str(movie.get("vote_count", "N/A"))
-                }
-                movies_list.append(movie_dict)
-
-        else:
-            print(f"Fail.....{response.status_code} || {response.text}")
-
-    except Exception as e:
-        print(f"Page {page_no}: Error while calling API: {e}")
-        continue
-
-
-movie_df1 = spark.createDataFrame(movies_list,schema=movie_schema)
-
-movie_df1 = movie_df1.sort(desc(col("Vote_Count")))
-movie_df1 = movie_df1.drop_duplicates(["Movie_ID"])
-
-#movie_df.write.format("delta").mode("overwrite").saveAsTable("temp_fact_movies")
-
-'''
-
-# METADATA ********************
-
-# META {
-# META   "language": "python",
-# META   "language_group": "synapse_pyspark"
-# META }
-
-# CELL ********************
-
-# Enrich temporary movie data with additional details (budget, revenue, etc.)
-# - Fetches details for each movie and updates the temporary table
-'''
-#movie_df2 = spark.read.table("temp_fact_movies")
-count = movie_df1.count()
-
-#creating a list called rows to make it iterable
-rows = movie_df1.take(count)
-
-movie_data1 = []
-
-for index, row in enumerate(rows):
-    movie_id = row.Movie_ID
-    url = f"https://api.themoviedb.org/3/movie/{movie_id}?language=en-US"
-    
-    try:
-        response = requests.get(url, headers=headers)
-        response.raise_for_status()  # Check for HTTP errors
-        data = response.json()
-        
-        budget = data.get("budget", 0)
-        imdb_id = data.get("imdb_id","N/A")
-        origin_country = data.get("origin_country","N/A")
-        revenue = data.get('revenue',None)
-        runtime = data.get('runtime',None)
-        
-        movie_data1.append((movie_id,budget,imdb_id,origin_country,revenue,runtime))
-    
-
-    except Exception as e:
-        print(e)
-
-temp_df1 = spark.createDataFrame(movie_data1,\
-            ["Movie_ID","budget","imdb_id","origin_country","revenue","runtime"])
-
-movie_df1 = movie_df1.join(temp_df1,"Movie_ID","left")
-
-#movie_df2.write.format("delta").mode("overwrite").option("overwriteSchema",True).saveAsTable("temp_fact_movies")
-'''
 
 # METADATA ********************
 
@@ -281,344 +205,26 @@ movie_df1 = movie_df1.join(temp_df1,"Movie_ID","left")
 
 # MARKDOWN ********************
 
-# movie_df3 = movie_df3.drop_duplicates(["Movie_ID"])
-# count2 = movie_df3.count()
-
-
-# CELL ********************
-
-# Enrich temporary movie data with cast information (lead actor and gender)
-# - Fetches cast details and updates the temporary table
-'''
-#movie_df3 = spark.read.table("temp_fact_movies")
-count2 = movie_df1.count()
-rows = movie_df1.take(count2)
-movie_data2 = []
-
-for index, row in enumerate(rows):
-    movie_id = row.Movie_ID
-
-    url = f"https://api.themoviedb.org/3/movie/{movie_id}/credits?language=en-US"
-
-    try:
-        response = requests.get(url,headers=headers)
-        response.raise_for_status()
-
-        data = response.json()
-
-        if data.get("cast") and len(data["cast"]) > 0:
-            name = data["cast"][0].get("name", "N/A")
-            gender = data["cast"][0].get("gender", "N/A")
-        else:
-            name = "N/A"
-            gender = "N/A"
-
-        movie_data2.append((movie_id,name,gender))
-
-    except Exception as e:
-        print(e)
-
-actor_df = spark.createDataFrame(movie_data2,["Movie_ID","Name","Gender"])
-movie_df1 = movie_df1.join(actor_df,"Movie_ID","left")
-
-movie_df1.write.format("delta").mode("overwrite")\
-    .option("overwriteSchema",True).saveAsTable(bronze_dict['b_fact_movies'])
-
-    '''
-
-# METADATA ********************
-
-# META {
-# META   "language": "python",
-# META   "language_group": "synapse_pyspark"
-# META }
+# schema = StructType([
+#     StructField("Date",DateType()),
+#     StructField('ID', IntegerType()),
+#     StructField('Status',StringType())
+# ])
+# lists = {}
+# temp_df = spark.createDataFrame(lists,schema=schema)
+# temp_df.write.format("delta").saveAsTable("logs")
 
 # MARKDOWN ********************
 
-# ##### MOVIE MERGE
+# spark.sql("TRUNCATE TABLE logs")
 
 # CELL ********************
-
-# Merge enriched movie data into the Bronze layer fact_movies table
-# - Deduplicates, merges updates, and inserts new records
-'''
-from delta.tables import DeltaTable
-from pyspark.sql.functions import col, desc
-
-# Read tables
-movie_df4 = spark.read.table(bronze_dict['b_fact_movies'])
-movie_df_update = spark.read.table("temp_fact_movies")
-
-# Deduplicate by Movie_ID, keeping the row with the highest Vote_Count
-movie_df4_sorted = movie_df4.sort(desc(col("Vote_Count")))
-movie_df4 = movie_df4_sorted.drop_duplicates(["Movie_ID"])
-
-movie_df_update_sorted = movie_df_update.sort(desc(col("Vote_Count")))
-movie_df_update = movie_df_update_sorted.drop_duplicates(["Movie_ID"])
-
-# Setup Delta table
-delta_table = DeltaTable.forName(spark, bronze_dict['b_fact_movies'])
-
-# Define merge logic
-source_key = "Movie_ID"
-target_key = "Movie_ID"
-columns = [col for col in movie_df_update.columns if col != source_key]
-
-update_condition = " OR ".join([f"target.{col} != source.{col}" for col in columns])
-
-update_set = {col: f"source.{col}" for col in columns}
-
-insert = {target_key: f"source.{source_key}", **{col: f"source.{col}" for col in columns}}
-
-# Perform merge with error handling
-try:
-    merge = delta_table.alias("target")\
-        .merge(
-            source=movie_df_update.alias("source"),
-            condition=f"target.{target_key} = source.{source_key}"
-        )\
-        .whenMatchedUpdate(
-            condition=update_condition,
-            set=update_set
-        )\
-        .whenNotMatchedInsert(
-            values=insert
-        )
-
-    merge_result = merge.execute()
-    print("Merge executed successfully")
-    spark.sql("DROP TABLE temp_fact_movies")
-    
-except Exception as e:
-    print(f"Merge failed: {e}")
-'''
-
-# METADATA ********************
-
-# META {
-# META   "language": "python",
-# META   "language_group": "synapse_pyspark"
-# META }
-
-# MARKDOWN ********************
-
-# ##### TV INITIAL
-
-# CELL ********************
-
-# Fetch initial TV show data from TMDB API for 2025 and store in a temporary table
-# - Fetches data across multiple pages, sorts, removes duplicates, and saves
-'''
-#url = "https://api.themoviedb.org/3/discover/tv?first_air_date_year=2025&include_adult=false&include_null_first_air_dates=false&language=en-US&page=1&sort_by=popularity.desc"
-tv_list = []
-
-#response = requests.get(url, headers=headers)
-#total_pages = response.json()['total_pages']
-
-for x in range(1,400):
-
-    url = f"https://api.themoviedb.org/3/tv/popular?language=en-US&page={x}"
-    
-    try:
-        response = requests.get(url, headers=headers)
-        tv_data = response.json()['results']
-
-        for y in tv_data:
-            
-            tv_dict = {
-                    "Adult": str(y.get("adult", "N/A")),
-                    "Backdrop_Path": str(y.get("backdrop_path", "N/A")),
-                    "First_Air_Date": str(y.get("first_air_date", "N/A")),
-                    "Genre_IDs": str(y.get("genre_ids", "N/A")),
-                    "TV_ID": str(y.get("id", "N/A")),
-                    "Name": str(y.get("name", "N/A")),
-                    "Origin_Country": str(y.get("origin_country", "N/A")),
-                    "Original_Language": str(y.get("original_language", "N/A")),
-                    "Original_Name": str(y.get("original_name", "N/A")),
-                    "Overview": str(y.get("overview", "N/A")),
-                    "Popularity": str(y.get("popularity", "N/A")),
-                    "Poster_Path": str(y.get("poster_path", "N/A")),
-                    "Vote_Average": str(y.get("vote_average", "N/A")),
-                    "Vote_Count": str(y.get("vote_count", "N/A"))
-                }
-            tv_list.append(tv_dict)
-
-    except Exception as e:
-        print(f"Fail.....{e} || ")
-
-tv_df = spark.createDataFrame(tv_list,schema = tv_schema)
-
-tv_df = tv_df.sort(desc(col("Vote_Count")))
-tv_df = tv_df.drop_duplicates(["TV_ID"])
-
-#tv_df.write.format("delta").mode("overwrite").saveAsTable("temp_fact_tv")
-
-'''
-
-# METADATA ********************
-
-# META {
-# META   "language": "python",
-# META   "language_group": "synapse_pyspark"
-# META }
-
-# MARKDOWN ********************
-
-# ##### TV ADD-ON
-
-# CELL ********************
-
-# Enrich temporary TV show data with additional details (runtime, seasons, etc.)
-# - Fetches details for each TV show and updates the temporary table
-'''
-tv2_list = []
-#tv2_df = spark.read.table("temp_fact_tv")
-count = tv_df.count()
-rows = tv_df.take(count)
-
-for index, row in enumerate(rows):
-    
-    tv_id = row.TV_ID
-    url = f"https://api.themoviedb.org/3/tv/{tv_id}?language=en-US"
-
-    try:
-        response = requests.get(url,headers = headers)
-        response.raise_for_status()
-
-        data = response.json()
-        episode_run_time = data.get('episode_run_time',None)
-        number_of_seasons = data.get('number_of_seasons', None)
-        number_of_episodes = data.get('number_of_episodes', None)
-        type = data.get('type',"N/A")
-
-        tv2_list.append((tv_id,episode_run_time,number_of_seasons,type,number_of_episodes))
-
-
-    except Exception as e:
-        print(e)
-
-temptv_df = spark.createDataFrame(tv2_list,\
-            ["TV_ID","episode_run_time","number_of_seasons","type","number_of_episodes"])
-
-tv_df = tv_df.join(temptv_df,"TV_ID","left")
-
-tv_df.write.format("delta").mode("overwrite").saveAsTable(bronze_dict['b_fact_tv'])
-'''
-
-# METADATA ********************
-
-# META {
-# META   "language": "python",
-# META   "language_group": "synapse_pyspark"
-# META }
-
-# MARKDOWN ********************
-
-# ###### TV MERGE
-
-# CELL ********************
-
-# Merge enriched TV show data into the Bronze layer fact_tv table
-# - Deduplicates, merges updates, and inserts new records
-'''
-
-# Read tables
-tv_df4 = spark.read.table(bronze_dict['b_fact_tv'])
-tv_df_update = spark.read.table("temp_fact_tv")
-
-# Deduplicate by Movie_ID, keeping the row with the highest Vote_Count
-tv_df4_sorted = tv_df4.sort(desc(col("Vote_Count")))
-tv_df4 = tv_df4_sorted.drop_duplicates(["TV_ID"])
-
-tv_df_update_sorted = tv_df_update.sort(desc(col("Vote_Count")))
-tv_df_update = tv_df_update_sorted.drop_duplicates(["TV_ID"])
-
-# Setup Delta table
-delta_table = DeltaTable.forName(spark, bronze_dict['b_fact_tv'])
-
-# Define merge logic
-source_key = "TV_ID"
-target_key = "TV_ID"
-columns = [col for col in tv_df_update.columns if col != source_key]
-
-update_condition = " OR ".join([f"target.{col} != source.{col}" for col in columns])
-
-update_set = {col: f"source.{col}" for col in columns}
-
-insert = {target_key: f"source.{source_key}", **{col: f"source.{col}" for col in columns}}
-
-# Perform merge with error handling
-try:
-    merge = delta_table.alias("target")\
-        .merge(
-            source=tv_df_update.alias("source"),
-            condition=f"target.{target_key} = source.{source_key}"
-        )\
-        .whenMatchedUpdate(
-            condition=update_condition,
-            set=update_set
-        )\
-        .whenNotMatchedInsert(
-            values=insert
-        )
-
-    merge_result = merge.execute()
-    print("Merge executed successfully")
-    spark.sql("DROP TABLE temp_fact_tv")
-    
-except Exception as e:
-    print(f"Merge failed: {e}")
-
-'''
-
-# METADATA ********************
-
-# META {
-# META   "language": "python",
-# META   "language_group": "synapse_pyspark"
-# META }
-
-# CELL ********************
-
-# Combine all dictionaries and exit the notebook with output
-# - Merges Bronze, Silver, and Gold dictionaries for pipeline reference
-'''
-output = bronze_dict | silver_dict | gold_dict
-
-mssparkutils.notebook.exit(json.dumps(output))
-'''
-
-# METADATA ********************
-
-# META {
-# META   "language": "python",
-# META   "language_group": "synapse_pyspark"
-# META }
-
-# MARKDOWN ********************
-
-# 
-# # List all tables in the current Lakehouse
-# tables = spark.catalog.listTables()
-# 
-# # Loop through each table and drop it
-# for table in tables:
-#     table_name = table.name
-#     try:
-#         spark.sql(f"DROP TABLE IF EXISTS {table_name}")
-#         print(f"Successfully dropped table: {table_name}")
-#     except Exception as e:
-#         print(f"Failed to drop table {table_name}: {str(e)}")
-
-# CELL ********************
-
-#testing....
 
 movies_list = []
 fail_count = 0
 max = 15212351
 
-for id in range(1,500000):
+for id in range(start,end+1):
 
     url = f"https://api.themoviedb.org/3/movie/{id}?language=en-US"
 
@@ -654,12 +260,19 @@ for id in range(1,500000):
 
             movies_list.append(movie_dict)
             if id%500 == 0:
-                print(f"{id} .............. done")
+                spark.sql(f"""
+                            INSERT INTO logs (ID, Status, Date) 
+                            VALUES
+                            ({id},'Success','{date}')
+                """)
 
         else: 
             if id%500 == 0:
-                print(f"{id} ........ fail")
-                print(f"Fail.....{response.status_code} || {response.text}")
+                 spark.sql(f"""
+                            INSERT INTO logs (ID, Status,Date) 
+                            VALUES
+                            ({id},'Fail','{date}')
+                """)
             fail_count = fail_count + 1
 
     except Exception as e:
@@ -670,6 +283,7 @@ for id in range(1,500000):
 movie_df1 = spark.createDataFrame(movies_list,schema=movie_schema)
 print(fail_count)
 movie_df1.write.format("delta").mode("append").option("mergeSchema", True).saveAsTable("temp")
+
 
 # METADATA ********************
 
@@ -680,60 +294,65 @@ movie_df1.write.format("delta").mode("append").option("mergeSchema", True).saveA
 
 # CELL ********************
 
-movies_list = []
+#testing....
 
-for id in range(500000,1000000):
+if testing == False:
+    movies_list = []
+    fail_count = 0
+    max = 15212351
 
-    url = f"https://api.themoviedb.org/3/movie/{id}?language=en-US"
+    for id in range(1,500000):
 
-    try:
-        response = requests.get(url, headers=headers)
-        if response.status_code == 200:
-            data = response.json()
-            #pprint(data)
-            
-            movie_dict = {
-                    "Adult": data.get("adult", False),
-                    "Backdrop_Path": data.get("backdrop_path", None),
-                    "Genre_IDs": data.get("genre_ids", []),
-                    "Movie_ID": data.get("id", 0),
-                    "IMDB_ID": data.get("imdb_id", None),
-                    "Original_Language": data.get("original_language", None),
-                    "Origin_Country": data.get("origin_country", []),
-                    "Original_Title": data.get("original_title", None),
-                    "Overview": data.get("overview", None),
-                    "Popularity": data.get("popularity", 0.0),
-                    "Poster_Path": data.get("poster_path", None),
-                    "Release_Date": data.get("release_date", None),
-                    "Revenue": data.get("revenue", 0),
-                    "Runtime": data.get("runtime", 0),
-                    "Budget": data.get("budget", 0),
-                    "Status": data.get("status", None),
-                    "Title": data.get("title", None),
-                    "Video": data.get("video", False),
-                    "Vote_Average": data.get("vote_average", 0.0),
-                    "Vote_Count": data.get("vote_count", 0)
-                }
+        url = f"https://api.themoviedb.org/3/movie/{id}?language=en-US"
+
+        try:
+            response = requests.get(url, headers=headers)
+            if response.status_code == 200:
+                data = response.json()
+                #pprint(data)
                 
+                movie_dict = {
+                        "Adult": data.get("adult", False),
+                        "Backdrop_Path": data.get("backdrop_path", None),
+                        "Genre_IDs": data.get("genre_ids", []),
+                        "Movie_ID": data.get("id", 0),
+                        "IMDB_ID": data.get("imdb_id", None),
+                        "Original_Language": data.get("original_language", None),
+                        "Origin_Country": data.get("origin_country", []),
+                        "Original_Title": data.get("original_title", None),
+                        "Overview": data.get("overview", None),
+                        "Popularity": data.get("popularity", 0.0),
+                        "Poster_Path": data.get("poster_path", None),
+                        "Release_Date": data.get("release_date", None),
+                        "Revenue": data.get("revenue", 0),
+                        "Runtime": data.get("runtime", 0),
+                        "Budget": data.get("budget", 0),
+                        "Status": data.get("status", None),
+                        "Title": data.get("title", None),
+                        "Video": data.get("video", False),
+                        "Vote_Average": data.get("vote_average", 0.0),
+                        "Vote_Count": data.get("vote_count", 0)
+                    }
+                    
 
-            movies_list.append(movie_dict)
-            if id%500 == 0:
-                print(f"{id} .............. done")
+                movies_list.append(movie_dict)
+                if id%500 == 0:
+                    print(f"{id} .............. done")
 
-        else: 
-            if id%500 == 0:
-                print(f"{id} ........ fail")
-                print(f"Fail.....{response.status_code} || {response.text}")
-            fail_count = fail_count + 1
+            else: 
+                if id%500 == 0:
+                    print(f"{id} ........ fail")
+                    print(f"Fail.....{response.status_code} || {response.text}")
+                fail_count = fail_count + 1
 
-    except Exception as e:
-        print(e)
-        continue
+        except Exception as e:
+            print(e)
+            continue
 
 
-movie_df1 = spark.createDataFrame(movies_list,schema=movie_schema)
-print(fail_count)
-movie_df1.write.format("delta").mode("append").option("mergeSchema", True).saveAsTable("temp")
+    movie_df1 = spark.createDataFrame(movies_list,schema=movie_schema)
+    print(fail_count)
+    movie_df1.write.format("delta").mode("append").option("mergeSchema", True).saveAsTable("temp")
 
 # METADATA ********************
 
@@ -744,60 +363,126 @@ movie_df1.write.format("delta").mode("append").option("mergeSchema", True).saveA
 
 # CELL ********************
 
-movies_list = []
+if testing == False:
+    movies_list = []
 
-for id in range(1000000,1500000):
+    for id in range(500000,1000000):
 
-    url = f"https://api.themoviedb.org/3/movie/{id}?language=en-US"
+        url = f"https://api.themoviedb.org/3/movie/{id}?language=en-US"
 
-    try:
-        response = requests.get(url, headers=headers)
-        if response.status_code == 200:
-            data = response.json()
-            #pprint(data)
-            
-            movie_dict = {
-                    "Adult": data.get("adult", False),
-                    "Backdrop_Path": data.get("backdrop_path", None),
-                    "Genre_IDs": data.get("genre_ids", []),
-                    "Movie_ID": data.get("id", 0),
-                    "IMDB_ID": data.get("imdb_id", None),
-                    "Original_Language": data.get("original_language", None),
-                    "Origin_Country": data.get("origin_country", []),
-                    "Original_Title": data.get("original_title", None),
-                    "Overview": data.get("overview", None),
-                    "Popularity": data.get("popularity", 0.0),
-                    "Poster_Path": data.get("poster_path", None),
-                    "Release_Date": data.get("release_date", None),
-                    "Revenue": data.get("revenue", 0),
-                    "Runtime": data.get("runtime", 0),
-                    "Budget": data.get("budget", 0),
-                    "Status": data.get("status", None),
-                    "Title": data.get("title", None),
-                    "Video": data.get("video", False),
-                    "Vote_Average": data.get("vote_average", 0.0),
-                    "Vote_Count": data.get("vote_count", 0)
-                }
+        try:
+            response = requests.get(url, headers=headers)
+            if response.status_code == 200:
+                data = response.json()
+                #pprint(data)
                 
+                movie_dict = {
+                        "Adult": data.get("adult", False),
+                        "Backdrop_Path": data.get("backdrop_path", None),
+                        "Genre_IDs": data.get("genre_ids", []),
+                        "Movie_ID": data.get("id", 0),
+                        "IMDB_ID": data.get("imdb_id", None),
+                        "Original_Language": data.get("original_language", None),
+                        "Origin_Country": data.get("origin_country", []),
+                        "Original_Title": data.get("original_title", None),
+                        "Overview": data.get("overview", None),
+                        "Popularity": data.get("popularity", 0.0),
+                        "Poster_Path": data.get("poster_path", None),
+                        "Release_Date": data.get("release_date", None),
+                        "Revenue": data.get("revenue", 0),
+                        "Runtime": data.get("runtime", 0),
+                        "Budget": data.get("budget", 0),
+                        "Status": data.get("status", None),
+                        "Title": data.get("title", None),
+                        "Video": data.get("video", False),
+                        "Vote_Average": data.get("vote_average", 0.0),
+                        "Vote_Count": data.get("vote_count", 0)
+                    }
+                    
 
-            movies_list.append(movie_dict)
-            if id%500 == 0:
-                print(f"{id} .............. done")
+                movies_list.append(movie_dict)
+                if id%500 == 0:
+                    print(f"{id} .............. done")
 
-        else: 
-            if id%500 == 0:
-                print(f"{id} ........ fail")
-                print(f"Fail.....{response.status_code} || {response.text}")
-            fail_count = fail_count + 1
+            else: 
+                if id%500 == 0:
+                    print(f"{id} ........ fail")
+                    print(f"Fail.....{response.status_code} || {response.text}")
+                fail_count = fail_count + 1
 
-    except Exception as e:
-        print(e)
-        continue
+        except Exception as e:
+            print(e)
+            continue
 
 
-movie_df1 = spark.createDataFrame(movies_list,schema=movie_schema)
-print(fail_count)
-movie_df1.write.format("delta").mode("append").option("mergeSchema", True).saveAsTable("temp")
+    movie_df1 = spark.createDataFrame(movies_list,schema=movie_schema)
+    print(fail_count)
+    movie_df1.write.format("delta").mode("append").option("mergeSchema", True).saveAsTable("temp")
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+if testing == False:
+    movies_list = []
+
+    for id in range(1000000,1500000):
+
+        url = f"https://api.themoviedb.org/3/movie/{id}?language=en-US"
+
+        try:
+            response = requests.get(url, headers=headers)
+            if response.status_code == 200:
+                data = response.json()
+                #pprint(data)
+                
+                movie_dict = {
+                        "Adult": data.get("adult", False),
+                        "Backdrop_Path": data.get("backdrop_path", None),
+                        "Genre_IDs": data.get("genre_ids", []),
+                        "Movie_ID": data.get("id", 0),
+                        "IMDB_ID": data.get("imdb_id", None),
+                        "Original_Language": data.get("original_language", None),
+                        "Origin_Country": data.get("origin_country", []),
+                        "Original_Title": data.get("original_title", None),
+                        "Overview": data.get("overview", None),
+                        "Popularity": data.get("popularity", 0.0),
+                        "Poster_Path": data.get("poster_path", None),
+                        "Release_Date": data.get("release_date", None),
+                        "Revenue": data.get("revenue", 0),
+                        "Runtime": data.get("runtime", 0),
+                        "Budget": data.get("budget", 0),
+                        "Status": data.get("status", None),
+                        "Title": data.get("title", None),
+                        "Video": data.get("video", False),
+                        "Vote_Average": data.get("vote_average", 0.0),
+                        "Vote_Count": data.get("vote_count", 0)
+                    }
+                    
+
+                movies_list.append(movie_dict)
+                if id%500 == 0:
+                    print(f"{id} .............. done")
+
+            else: 
+                if id%500 == 0:
+                    print(f"{id} ........ fail")
+                    print(f"Fail.....{response.status_code} || {response.text}")
+                fail_count = fail_count + 1
+
+        except Exception as e:
+            print(e)
+            continue
+
+
+    movie_df1 = spark.createDataFrame(movies_list,schema=movie_schema)
+    print(fail_count)
+    movie_df1.write.format("delta").mode("append").option("mergeSchema", True).saveAsTable("temp")
 
 # METADATA ********************
 
@@ -841,26 +526,6 @@ movie_df1 = movie_df1.join(actor_df,"Movie_ID","left")
 movie_df1.write.format("delta").mode("overwrite").option("mergeSchema", True).saveAsTable("temp")
 
 '''
-
-# METADATA ********************
-
-# META {
-# META   "language": "python",
-# META   "language_group": "synapse_pyspark"
-# META }
-
-# CELL ********************
-
-
-# METADATA ********************
-
-# META {
-# META   "language": "python",
-# META   "language_group": "synapse_pyspark"
-# META }
-
-# CELL ********************
-
 
 # METADATA ********************
 
@@ -922,26 +587,6 @@ tv_df = spark.createDataFrame(tv_list,schema = tv_schema)
 print(fail_count)
 display(tv_df)
 '''
-
-# METADATA ********************
-
-# META {
-# META   "language": "python",
-# META   "language_group": "synapse_pyspark"
-# META }
-
-# CELL ********************
-
-
-# METADATA ********************
-
-# META {
-# META   "language": "python",
-# META   "language_group": "synapse_pyspark"
-# META }
-
-# CELL ********************
-
 
 # METADATA ********************
 
