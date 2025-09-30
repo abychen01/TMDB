@@ -189,6 +189,24 @@ df_genre_movie.write.format("delta").mode("overwrite")\
 
 # CELL ********************
 
+#testing...
+
+df = spark.read.table("fact_movies").limit(20)
+df2 = spark.read.table("fact_tv").limit(20)
+
+display(df)
+display(df2)
+
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
 # Copy dimension tables to Gold layer on the 15th or 28th
 # - Transfers countries, languages, and genre_combined if condition met
 
