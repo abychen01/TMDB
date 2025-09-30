@@ -1,7 +1,16 @@
 table fact_tv
 	lineageTag: dcc146f8-db0d-4470-af50-eed87393b28a
 
-	measure tv_count = COUNTROWS(fact_tv)
+	measure tv_count = ```
+			
+			    if(
+			        COUNTROWS(fact_tv)==BLANK(),
+			        0,
+			        COUNTROWS(fact_tv)
+			    )
+			
+			
+			```
 		formatString: 0
 		lineageTag: 6ccf1c73-e91c-415c-b765-39cd8dd54a58
 

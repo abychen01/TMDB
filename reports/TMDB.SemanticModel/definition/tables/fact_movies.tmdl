@@ -1,7 +1,14 @@
 table fact_movies
 	lineageTag: 5fef6548-4e5a-44e0-ab0d-a5405636e2f3
 
-	measure movies_count = COUNTROWS(fact_movies)
+	measure movies_count = ```
+			
+			    IF(
+			        COUNTROWS(fact_movies) == BLANK(),
+			        0,
+			        COUNTROWS(fact_movies)
+			    )
+			```
 		formatString: 0
 		lineageTag: 9e33ab44-8be3-48ed-86b6-8855b58e8dd7
 
