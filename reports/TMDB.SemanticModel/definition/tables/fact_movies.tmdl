@@ -1,0 +1,344 @@
+table fact_movies
+	lineageTag: 5fef6548-4e5a-44e0-ab0d-a5405636e2f3
+
+	measure movies_count = COUNTROWS(fact_movies)
+		formatString: 0
+		lineageTag: 9e33ab44-8be3-48ed-86b6-8855b58e8dd7
+
+	measure top1_profit_title = ```
+			
+			    CALCULATE(
+			        MAX(fact_movies[Title]),
+			        TOPN(
+			            1,
+			            fact_movies,
+			            fact_movies[revenue] - fact_movies[budget],
+			            DESC
+			        )
+			    )
+			            
+			```
+		lineageTag: c20a4cfb-bcef-4a91-84b1-541c4948affc
+
+	measure top1_loss_title = ```
+			
+			    CALCULATE(
+			        MAX(fact_movies[Title]),
+			        TOPN(
+			            1,
+			            CALCULATETABLE(
+			                fact_movies,
+			                fact_movies[revenue] > 10
+			            ),
+			            fact_movies[revenue]-fact_movies[budget],
+			            ASC
+			        )
+			    )
+			```
+		lineageTag: dbbd9d88-a281-4170-b7d0-5552de9160a4
+
+	measure top1_profit_budget =
+			
+			CALCULATE(
+			    MAX(fact_movies[budget]),
+			    TOPN(
+			        1,
+			        fact_movies,
+			        fact_movies[revenue]-fact_movies[budget],
+			        DESC
+			    )
+			)
+		formatString: 0
+		lineageTag: adfd63d1-1615-4ed3-81af-0c2f4e8b571e
+
+	measure top1_loss_revenue = ```
+			
+			    CALCULATE(
+			        MAX(fact_movies[revenue]),
+			        TOPN(
+			            1,
+			            CALCULATETABLE(
+			                fact_movies,
+			                fact_movies[revenue] > 10
+			            ),
+			            fact_movies[revenue]-fact_movies[budget],
+			            ASC
+			        )
+			    )
+			```
+		formatString: 0
+		lineageTag: 41054c71-f60d-48c6-99b6-2a541c7711c1
+
+	measure top1_profit_revenue =
+			
+			CALCULATE(
+			    MAX(fact_movies[revenue]),
+			    TOPN(
+			        1,
+			        fact_movies,
+			        fact_movies[revenue]-fact_movies[budget],
+			        DESC
+			    )
+			)
+		formatString: 0
+		lineageTag: b8afbd60-1fdf-45ac-9d94-1516958d49f5
+
+	measure top1_loss_budgete = ```
+			
+			    CALCULATE(
+			        MAX(fact_movies[budget]),
+			        TOPN(
+			            1,
+			            CALCULATETABLE(
+			                fact_movies,
+			                fact_movies[revenue] > 0
+			            ),
+			            fact_movies[revenue]-fact_movies[budget],
+			            ASC
+			        )
+			    )
+			```
+		formatString: 0
+		lineageTag: d6e13d77-6ffc-45dc-b921-de8d3202eb2b
+
+	measure top1_loss_target = ```
+			
+			    [top1_loss_budgete]*2
+			```
+		formatString: 0
+		lineageTag: 9be6dd12-6b14-4353-b4bd-eef9d92a35d4
+
+	measure top1_profit_kpi_max = ```
+			
+			    [top1_profit_budget]*2
+			```
+		formatString: 0
+		lineageTag: d0e27bf0-811a-4cae-bb14-fc8f487ec3c9
+
+	measure movies&tv_count = fact_movies[movies_count] + fact_tv[tv_count]
+		formatString: 0
+		lineageTag: ab2a95f4-f594-4a82-80c2-305e3330df35
+
+	measure top1_profit_percentage = (([top1_profit_revenue] - [top1_profit_budget]) / [top1_profit_budget])
+		formatString: 0.00%;-0.00%;0.00%
+		lineageTag: d3d7bf3a-0806-491a-869b-f40ca88483a8
+
+	measure top1_loss_percent = ([top1_loss_revenue] - [top1_loss_budgete]) / [top1_loss_budgete]
+		formatString: 0.00%;-0.00%;0.00%
+		lineageTag: 2aebc210-20d9-4e35-b8c1-6fa5caf6bf15
+
+	measure most_popular_movie = ```
+			
+			    CALCULATE(
+			        MAX(fact_movies[Title]),
+			        TOPN(
+			            1,
+			            fact_movies,
+			            fact_movies[Popularity],
+			            DESC
+			        )
+			    )
+			```
+		lineageTag: 6ffa52c1-2bf0-405c-8d1c-c235a0d76108
+
+	column Movie_ID
+		dataType: int64
+		formatString: 0
+		lineageTag: 540619ea-f85d-430a-824d-30c9e06d090a
+		summarizeBy: none
+		sourceColumn: Movie_ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column Original_Language
+		dataType: string
+		lineageTag: 2ee38b24-e821-4f70-942a-1192053ad003
+		summarizeBy: none
+		sourceColumn: Original_Language
+
+		annotation SummarizationSetBy = Automatic
+
+	column Original_Title
+		dataType: string
+		lineageTag: ea288203-b18e-4265-acd5-92faa71c27d9
+		summarizeBy: none
+		sourceColumn: Original_Title
+
+		annotation SummarizationSetBy = Automatic
+
+	column Overview
+		dataType: string
+		lineageTag: 92f2e330-7841-46ba-8951-33d90e0431cf
+		summarizeBy: none
+		sourceColumn: Overview
+
+		annotation SummarizationSetBy = Automatic
+
+	column Popularity
+		dataType: double
+		lineageTag: 15417113-642e-4ee6-81c7-68cd26dac6d9
+		summarizeBy: none
+		sourceColumn: Popularity
+
+		annotation SummarizationSetBy = User
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Release_Date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 6427c8c0-6444-48e0-a196-1333b26f36cc
+		summarizeBy: none
+		sourceColumn: Release_Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Title
+		dataType: string
+		lineageTag: 8541678b-8993-4021-92df-e53b79e655db
+		summarizeBy: none
+		sourceColumn: Title
+
+		annotation SummarizationSetBy = Automatic
+
+	column Vote_Average
+		dataType: double
+		lineageTag: b0d10a67-bb7d-474e-ba0e-570db8c288bc
+		summarizeBy: none
+		sourceColumn: Vote_Average
+
+		annotation SummarizationSetBy = User
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+		annotation __PBI_SemanticLinks = [{"LinkTarget":{"TableName":"fact_movies","TableItemName":"Vote_Average (bins)","ObjectType":4},"LinkType":"UsedInGroup"}]
+
+	column Vote_Count
+		dataType: double
+		lineageTag: 22191712-4b6a-4041-b7f1-9e6d3d488f87
+		summarizeBy: none
+		sourceColumn: Vote_Count
+
+		annotation SummarizationSetBy = User
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Vote_Average (bins)' = ```
+			VAR __Count = 10
+			
+			VAR __Min = MIN('fact_movies'[Vote_Average])
+			
+			VAR __Max = MAX('fact_movies'[Vote_Average])
+			
+			VAR __Difference = (__Max - __Min)
+			
+			VAR __Size = IF(__Difference > 0, __Difference / __Count, 1)
+			
+			VAR __BinNumber = 
+				IF(
+					ISBLANK('fact_movies'[Vote_Average]),
+					BLANK(),
+					ROUNDDOWN(('fact_movies'[Vote_Average] - __Min) / __Size, 0)
+				)
+			
+			RETURN
+				IF(
+					ISBLANK('fact_movies'[Vote_Average]),
+					BLANK(),
+					__Min + (MIN(__BinNumber, __Count - 1) * __Size)
+				)
+			```
+		lineageTag: 476a83f3-c62f-4c4f-b4bf-d826d8041431
+		summarizeBy: none
+
+		extendedProperty GroupingMetadata =
+				{
+				  "version": 0,
+				  "groupedColumns": [
+				    {
+				      "Column": {
+				        "Expression": {
+				          "SourceRef": {
+				            "Entity": "fact_movies"
+				          }
+				        },
+				        "Property": "Vote_Average"
+				      }
+				    }
+				  ]
+				}
+
+		annotation GroupingDesignState = {"Version":0,"Sources":[{"Name":"f","Entity":"fact_movies"}],"GroupedColumns":[{"Column":{"Expression":{"SourceRef":{"Source":"f"}},"Property":"Vote_Average"}}],"BinItem":{"Expression":{"Member":{"Expression":{"Discretize":{"Expression":{"Column":{"Expression":{"SourceRef":{"Source":"f"}},"Property":"Vote_Average"}},"Count":10}},"Member":"Min"}}}}
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column IMDB_ID
+		dataType: string
+		lineageTag: 3bae99e2-7159-478d-991c-14cba5f930dd
+		summarizeBy: none
+		sourceColumn: IMDB_ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column Revenue
+		dataType: int64
+		formatString: 0
+		lineageTag: fbfb2f1d-db9c-4a8e-946d-d59bcd0cc342
+		summarizeBy: sum
+		sourceColumn: Revenue
+
+		annotation SummarizationSetBy = Automatic
+
+	column Runtime
+		dataType: int64
+		formatString: 0
+		lineageTag: 35e4b445-3e28-4a01-ae21-cea24048f01e
+		summarizeBy: sum
+		sourceColumn: Runtime
+
+		annotation SummarizationSetBy = Automatic
+
+	column Budget
+		dataType: int64
+		formatString: 0
+		lineageTag: b3d7548c-a95f-4ecd-aa5f-9f9810f0c0bb
+		summarizeBy: sum
+		sourceColumn: Budget
+
+		annotation SummarizationSetBy = Automatic
+
+	column Status
+		dataType: string
+		lineageTag: e19a8b93-4bf2-447a-b525-905bde79e2ef
+		summarizeBy: none
+		sourceColumn: Status
+
+		annotation SummarizationSetBy = Automatic
+
+	column Origin_Country
+		dataType: string
+		lineageTag: 5a58c357-636d-45f0-8078-43e3027e8bae
+		summarizeBy: none
+		sourceColumn: Origin_Country
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fact_movies = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database("myfreesqldbserver66.database.windows.net", "TMDB"),
+				    dbo_fact_movies = Source{[Schema="dbo",Item="fact_movies"]}[Data],
+				    #"Removed Columns" = Table.RemoveColumns(dbo_fact_movies,{"Backdrop_Path", "Poster_Path", "Genre_IDs"}),
+				    #"Sorted Rows" = Table.Sort(#"Removed Columns",{{"Release_Date", Order.Ascending}})
+				in
+				    #"Sorted Rows"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

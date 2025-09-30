@@ -1,0 +1,34 @@
+table genre_movie_bridge
+	lineageTag: 3e6e1066-2329-4e41-bc82-3ce51227b993
+
+	column Movie_ID
+		dataType: int64
+		formatString: 0
+		lineageTag: 21233425-4cf7-4715-9a3c-3d0518489a37
+		summarizeBy: none
+		sourceColumn: Movie_ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column Genre_ID
+		dataType: int64
+		formatString: 0
+		lineageTag: 89e8ab23-8b79-46e8-baa6-273fdd1bdaaf
+		summarizeBy: none
+		sourceColumn: Genre_ID
+
+		annotation SummarizationSetBy = Automatic
+
+	partition genre_movie_bridge = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database("myfreesqldbserver66.database.windows.net", "TMDB"),
+				    dbo_genre_movie_bridge = Source{[Schema="dbo",Item="genre_movie_bridge"]}[Data]
+				in
+				    dbo_genre_movie_bridge
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

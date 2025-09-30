@@ -1,0 +1,40 @@
+table languages
+	lineageTag: c3efbedd-3dd2-4cc1-bede-b5f790113229
+
+	column iso_3166_1
+		dataType: string
+		lineageTag: 74b65d02-9780-4a72-be6b-caf8b0ad9d53
+		summarizeBy: none
+		sourceColumn: iso_3166_1
+
+		annotation SummarizationSetBy = Automatic
+
+	column english_name
+		dataType: string
+		lineageTag: 26698116-913b-4b3c-8f30-5c290b19ea2e
+		summarizeBy: none
+		sourceColumn: english_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column native_name
+		dataType: string
+		lineageTag: 7aa03e4a-b974-4397-8035-f92dd681ec02
+		summarizeBy: none
+		sourceColumn: native_name
+
+		annotation SummarizationSetBy = Automatic
+
+	partition languages = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database("myfreesqldbserver66.database.windows.net", "TMDB"),
+				    dbo_languages = Source{[Schema="dbo",Item="languages"]}[Data]
+				in
+				    dbo_languages
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

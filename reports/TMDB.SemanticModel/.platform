@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "SemanticModel",
+    "displayName": "TMDB"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "e08fcc33-d583-4251-9027-2cbca84392c6"
+  }
+}
