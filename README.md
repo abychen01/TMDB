@@ -2,7 +2,7 @@
 
 This project is a data engineering pipeline that collects movie and TV show data from The Movie Database (TMDB) API and processes it using a medallion architecture (Bronze, Silver, Gold layers). It is implemented using Microsoft Fabric with PySpark notebooks and orchestrated via pipelines. The project is divided into two main parts: **Historic ETL** for initial data collection and **Daily ETL** for incremental updates.
 
-[Power BI report](https://app.fabric.microsoft.com/view?r=eyJrIjoiNzQwZDZlMWItZDE1Ni00NmZjLWI4NTItZTM0ZTNkZGMxNGQ4IiwidCI6IjZkYWRkOGM5LTMxMGEtNGE2Ni05MzRhLWQ5MGI1OTk5YjViMCJ9)
+<a href="https://app.fabric.microsoft.com/view?r=eyJrIjoiMWNkOWE3MzYtNDhiYy00MDI2LWJlMzQtZDM0M2IxOTgwZjA2IiwidCI6IjZkYWRkOGM5LTMxMGEtNGE2Ni05MzRhLWQ5MGI1OTk5YjViMCJ9" target="_blank">Power BI report</a>
 
 
 ## Project Overview
