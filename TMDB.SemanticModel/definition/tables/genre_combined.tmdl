@@ -1,0 +1,33 @@
+table genre_combined
+	lineageTag: 2070a6fe-fc70-403f-83ad-94b9f4a66b90
+
+	column name
+		dataType: string
+		lineageTag: 5a7aa332-7ca1-4f63-a528-6265951e7d18
+		summarizeBy: none
+		sourceColumn: name
+
+		annotation SummarizationSetBy = Automatic
+
+	column id
+		dataType: int64
+		formatString: 0
+		lineageTag: 67ffa1e7-0712-4682-b61d-1d3734767717
+		summarizeBy: none
+		sourceColumn: id
+
+		annotation SummarizationSetBy = Automatic
+
+	partition genre_combined = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database("myfreesqldbserver66.database.windows.net", "TMDB"),
+				    dbo_genre_combined = Source{[Schema="dbo",Item="genre_combined"]}[Data]
+				in
+				    dbo_genre_combined
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

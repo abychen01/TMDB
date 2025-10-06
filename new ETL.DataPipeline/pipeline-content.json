@@ -1,0 +1,105 @@
+{
+  "properties": {
+    "activities": [
+      {
+        "type": "ForEach",
+        "typeProperties": {
+          "isSequential": true,
+          "items": {
+            "value": "@pipeline().parameters.batches",
+            "type": "Expression"
+          },
+          "activities": [
+            {
+              "type": "TridentNotebook",
+              "typeProperties": {
+                "notebookId": "e6f9e795-e5df-45ed-beee-1e824f32764c",
+                "workspaceId": "b8e7a887-498e-4e85-af11-885c32a43aa5",
+                "parameters": {
+                  "start": {
+                    "value": {
+                      "value": "@item().start",
+                      "type": "Expression"
+                    },
+                    "type": "int"
+                  },
+                  "end": {
+                    "value": {
+                      "value": "@item().end",
+                      "type": "Expression"
+                    },
+                    "type": "int"
+                  }
+                }
+              },
+              "policy": {
+                "timeout": "7.00:00:00",
+                "retry": 2,
+                "retryIntervalInSeconds": 30,
+                "secureInput": false,
+                "secureOutput": false
+              },
+              "name": "Bronze_NB - fact_movies",
+              "dependsOn": []
+            }
+          ]
+        },
+        "name": "ForEach",
+        "state": "Inactive",
+        "onInactiveMarkAs": "Succeeded",
+        "dependsOn": []
+      },
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "2544c616-a17b-9c6d-4ccc-71ae66cef328",
+          "workspaceId": "00000000-0000-0000-0000-000000000000"
+        },
+        "policy": {
+          "timeout": "6.12:00:00",
+          "retry": 1,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Bronze_NB - fact_tv",
+        "dependsOn": [
+          {
+            "activity": "ForEach",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      }
+    ],
+    "parameters": {
+      "batches": {
+        "type": "array",
+        "defaultValue": [
+          {
+            "start": 0,
+            "end": 500000
+          },
+          {
+            "start": 500001,
+            "end": 1000000
+          },
+          {
+            "start": 1000001,
+            "end": 1500000
+          },
+          {
+            "start": 1500001,
+            "end": 2000000
+          }
+        ]
+      }
+    },
+    "variables": {
+      "BatchRanges": {
+        "type": "Array"
+      }
+    }
+  }
+}

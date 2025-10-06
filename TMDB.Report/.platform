@@ -1,11 +1,11 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
   "metadata": {
-    "type": "SemanticModel",
-    "displayName": "TMDB_data"
+    "type": "Report",
+    "displayName": "TMDB"
   },
   "config": {
     "version": "2.0",
-    "logicalId": "b1005b4a-610f-a564-450c-b892dbe47dd7"
+    "logicalId": "e5cbb74e-70ef-b400-43d8-2d2799fdfd6c"
   }
 }

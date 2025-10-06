@@ -26,6 +26,10 @@
 # META   }
 # META }
 
+# MARKDOWN ********************
+
+# ##### Pipeline parameters
+
 # PARAMETERS CELL ********************
 
 # Define variables for Bronze and Silver table names (passed via pipeline)
@@ -49,6 +53,10 @@ s_languages = ""
 # META   "language": "python",
 # META   "language_group": "synapse_pyspark"
 # META }
+
+# MARKDOWN ********************
+
+# ##### Imports
 
 # CELL ********************
 
@@ -105,49 +113,17 @@ import json
 # 
 
 
-# CELL ********************
+# MARKDOWN ********************
 
-# Transform movie data from Bronze to Silver layer
-# - Drops unnecessary columns, extracts first origin_country, casts types, maps gender
+# ##### fact_movie transformations
+
+# CELL ********************
 
 df_movie = spark.read.table(b_fact_movies)
 
-df_movie = df_movie.drop(col("Adult"),col("Video"))\
-        .withColumn("origin_country", df_movie.origin_country[0])\
-        .withColumn("Movie_ID",df_movie.Movie_ID.cast("int"))\
-        .withColumn("Release_Date",df_movie.Release_Date.cast("date"))\
-        .withColumn("Popularity",df_movie.Popularity.cast("float"))\
-        .withColumn("Vote_Average",df_movie.Vote_Average.cast("float"))\
-        .withColumn("Vote_Count",df_movie.Vote_Count.cast("float"))\
-        .withColumn("Gender", when(df_movie.Gender == 0,"N/A")\
-                                .when(df_movie.Gender == 1,"Female")\
-                                .when(df_movie.Gender == 2,"Male"))
-
-df_movie.write.format("delta").mode("overwrite")\
-        .option("overwriteSchema",True).saveAsTable(s_fact_movies)
-
-
-
-
-# METADATA ********************
-
-# META {
-# META   "language": "python",
-# META   "language_group": "synapse_pyspark"
-# META }
-
-# CELL ********************
-
-#testing....
-
-df_movie = spark.read.table("Bronze_LH.temp")
-#display(df_movie)
-
-
-df_movie = df_movie.drop(col("Adult"),col("Video"))
 
 cols_list = [c for c in df_movie.columns if c not in ['Origin_Country','Movie_ID','Release_Date',\
-                'Popularity','Vote_Average','Vote_Count']]
+                'Popularity','Vote_Average','Vote_Count','Gender','Adult','Video']]
 
 df_movie = df_movie.select(
             *[col(c) for c in cols_list],
@@ -156,18 +132,14 @@ df_movie = df_movie.select(
             df_movie.Release_Date.cast("date").alias('Release_Date'),
             df_movie.Popularity.cast("float").alias('Popularity'),
             df_movie.Vote_Average.cast("float").alias('Vote_Average'),
-            df_movie.Vote_Count.cast("float").alias('Vote_Count')
+            df_movie.Vote_Count.cast("float").alias('Vote_Count'),
+            when(df_movie.Gender == 1,"Female")\
+                .when(df_movie.Gender == 2,"Male")\
+                .otherwise('N/A').alias('Gender')
 )
 
 df_movie.write.format("delta").mode("overwrite")\
-        .option("overwriteSchema",True).saveAsTable("fact_movies")
-
-''' 
-
-.withColumn("Gender", when(df_movie.Gender == 0,"N/A")\
-                                .when(df_movie.Gender == 1,"Female")\
-                                .when(df_movie.Gender == 2,"Male"))
-'''
+        .option("overwriteSchema",True).saveAsTable(s_fact_movies)
 
 # METADATA ********************
 
@@ -176,16 +148,20 @@ df_movie.write.format("delta").mode("overwrite")\
 # META   "language_group": "synapse_pyspark"
 # META }
 
+# MARKDOWN ********************
+
+# ##### fact_tv transformations
+
 # CELL ********************
 
 # Transform TV show data from Bronze to Silver layer
 # - Drops unnecessary columns, extracts country code, casts types
 
-df_tv = spark.read.table("fact_tv")
+df_tv = spark.read.table(b_fact_tv)
 
 cols_list = [c for c in df_tv.columns if c not in \
-                ['Origin_Country','Episode_Run_Time','TV_ID','First_Air_Date',\
-                'Popularity','Vote_Average','Vote_Count']]
+                ['Origin_Country','Episode_Run_Time','TV_ID','First_Air_Date','Last_Air_Date',\
+                'Popularity','Vote_Average','Vote_Count','Adult']]
 
 df_tv = df_tv.select(
                 *[col(c) for c in cols_list],
@@ -194,12 +170,14 @@ df_tv = df_tv.select(
                         .otherwise('').cast('int').alias('Episode_Run_Time'),
                 df_tv.TV_ID.cast("int").alias('TV_ID'), 
                 df_tv.First_Air_Date.cast("date").alias('First_Air_Date'),
+                df_tv.Last_Air_Date.cast("date").alias('Last_Air_Date'),
                 df_tv.Popularity.cast("float").alias('Popularity'),
                 df_tv.Vote_Average.cast("float").alias('Vote_Average'),
                 df_tv.Vote_Count.cast("float").alias('Vote_Count')
 
 )
-df_tv.write.format("delta").option("overwriteSchema",True).mode("overwrite").saveAsTable('fact_tv')
+
+df_tv.write.format("delta").option("overwriteSchema",True).mode("overwrite").saveAsTable(s_fact_tv)
 
 
 # METADATA ********************
@@ -209,50 +187,15 @@ df_tv.write.format("delta").option("overwriteSchema",True).mode("overwrite").sav
 # META   "language_group": "synapse_pyspark"
 # META }
 
-# CELL ********************
+# MARKDOWN ********************
 
-#testing...
-
-df_genre_tv = spark.read.table('Bronze_LH.genre_tv').withColumnRenamed("id","tv_id")
-df_genre_movie = spark.read.table('Bronze_LH.genre_movie').withColumnRenamed("id","movie_id")
-
-
-df_join = df_genre_movie.join(df_genre_tv,"name","outer")
-df_genre = df_join.withColumn("id", when(col("movie_id").isNull(),df_join.tv_id)\
-                .otherwise(df_join.movie_id))
-
-df_genre = df_genre.drop(col("movie_id"),col("tv_id"))
-
-
-df_genre.write.format("delta").mode("overwrite").saveAsTable('Silver_LH.genre_combined')
-df_genre_tv.write.format("delta").mode("overwrite").saveAsTable('Silver_LH.genre_tv')
-df_genre_movie.write.format("delta").mode("overwrite").saveAsTable('Silver_LH.genre_movie')
-
-'''
-df_join = df_genre_movie.join(df_genre_tv,"name","outer")
-df_genre = df_join.withColumn("id", when(col("movie_id").isNull(),df_join.tv_id)\
-                .otherwise(df_join.movie_id))
-                
-df_genre = df_genre.drop(col("movie_id"),col("tv_id"))
-
-df_genre.write.format("delta").mode("overwrite").saveAsTable(s_genre_combined)
-df_genre_tv.write.format("delta").mode("overwrite").saveAsTable('Silver_LH.genre_tv')
-df_genre_movie.write.format("delta").mode("overwrite").saveAsTable('Silver_LH.genre_movie')
-
-'''
-
-# METADATA ********************
-
-# META {
-# META   "language": "python",
-# META   "language_group": "synapse_pyspark"
-# META }
+# ##### other transformations
 
 # CELL ********************
 
 # Transform dimension tables on the 15th or 28th
 
-if True:#date.today().day in (15,28):
+if date.today().day in (15,28):
 
     df_countries = spark.read.table(b_countries)
     df_countries = df_countries.withColumnRenamed("iso_3166_1","country_id")
@@ -264,16 +207,10 @@ if True:#date.today().day in (15,28):
     df_languages.write.format("delta").mode("overwrite")\
                 .option("overwriteSchema", "true").saveAsTable(s_languages)
 
-    df_genre_tv = spark.read.table(b_genre_tv).withColumnRenamed("id","tv_id")
-    df_genre_movie = spark.read.table(b_genre_movie).withColumnRenamed("id","movie_id")
-
-    df_join = df_genre_movie.join(df_genre_tv,"name","outer")
-    df_genre = df_join.withColumn("id", when(col("movie_id").isNull(),df_join.tv_id)\
-                    .otherwise(df_join.movie_id))
-                    
-    df_genre = df_genre.drop(col("movie_id"),col("tv_id"))
-
-    df_genre.write.format("delta").mode("overwrite").saveAsTable(s_genre_combined)
+    df_genre_tv = spark.read.table('Bronze_LH.genre_tv').withColumnRenamed("id","tv_id")\
+                        .write.format("delta").mode("overwrite").saveAsTable('Silver_LH.genre_tv')
+    df_genre_movie = spark.read.table('Bronze_LH.genre_movie').withColumnRenamed("id","movie_id")\
+                        .write.format("delta").mode("overwrite").saveAsTable('Silver_LH.genre_movie')
 
 # METADATA ********************
 
@@ -296,13 +233,3 @@ if True:#date.today().day in (15,28):
 #         print(f"Successfully dropped table: {table_name}")
 #     except Exception as e:
 #         print(f"Failed to drop table {table_name}: {str(e)}")
-
-# CELL ********************
-
-
-# METADATA ********************
-
-# META {
-# META   "language": "python",
-# META   "language_group": "synapse_pyspark"
-# META }
