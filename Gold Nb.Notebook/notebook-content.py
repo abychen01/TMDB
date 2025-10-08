@@ -81,7 +81,7 @@ from datetime import date
 # Update movie genre bridge table on the 15th or 28th
 # - Converts Genre_IDs to array, explodes it, and saves if condition met
 
-df_movie = spark.read.table(s_fact_movies)
+df_movie = spark.read.table("Silver_LH.fact_movies")
 df_genre_movie = spark.read.table('Silver_LH.genre_movie')
 
 
@@ -115,7 +115,7 @@ df_genre_movie.write.format("delta").mode("overwrite")\
 # Update TV genre bridge table on the 15th or 28th
 # - Converts Genre_IDs to array, explodes it, and saves if condition met
 
-df_tv = spark.read.table('Silver_LH.tv_temp')
+df_tv = spark.read.table('Silver_LH.fact_tv')
 df_genre_tv = spark.read.table('Silver_LH.genre_tv')
 
 df_tv = df_tv\
@@ -149,13 +149,13 @@ df_genre_tv.write.format("delta").mode("overwrite")\
 # Copy dimension tables to Gold layer on the 15th or 28th
 # - Transfers countries and languages if condition met
 
-if date.today().day in (15,28):
+if True:
 
-        spark.read.table(s_countries).write.format("delta")\
-                .mode("overwrite").saveAsTable(g_countries)
+        spark.read.table("Silver_LH.countries").write.format("delta")\
+                .mode("overwrite").saveAsTable("Gold_LH.countries")
 
-        spark.read.table(s_languages).write.format("delta")\
-                .mode("overwrite").option("overwriteSchema",True).saveAsTable(g_languages)
+        spark.read.table("Silver_LH.languages").write.format("delta")\
+                .mode("overwrite").option("overwriteSchema",True).saveAsTable("Gold_LH.languages")
 
 
 # METADATA ********************
@@ -189,30 +189,12 @@ df_fact_tv.write.format("delta").option("overwriteSchema",True)\
 # META   "language_group": "synapse_pyspark"
 # META }
 
-# MARKDOWN ********************
+# CELL ********************
 
-# # Copy fact tables from Silver to Gold layer daily
-# 
-# df_fact_movies = spark.read.table(s_fact_movies)
-# df_fact_tv = spark.read.table(s_fact_tv)
-# 
-# df_fact_movies.write.format("delta").option("overwriteSchema",True)\
-#                 .mode("overwrite").saveAsTable(g_fact_movie)
-# 
-# df_fact_tv.write.format("delta").option("overwriteSchema",True)\
-#                 .mode("overwrite").saveAsTable(g_fact_tv)
 
-# MARKDOWN ********************
+# METADATA ********************
 
-# 
-# # List all tables in the current Lakehouse
-# tables = spark.catalog.listTables()
-# 
-# # Loop through each table and drop it
-# for table in tables:
-#     table_name = table.name
-#     try:
-#         spark.sql(f"DROP TABLE IF EXISTS {table_name}")
-#         print(f"Successfully dropped table: {table_name}")
-#     except Exception as e:
-#         print(f"Failed to drop table {table_name}: {str(e)}")
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }

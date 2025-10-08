@@ -76,22 +76,29 @@ import json
 # META   "language_group": "synapse_pyspark"
 # META }
 
-# MARKDOWN ********************
+# CELL ********************
 
-# b2_countries = "Bronze_LH.countries"
-# b2_fact_tv = "Bronze_LH.fact_tv"
-# b2_fact_movies = "Bronze_LH.fact_movies"
-# b2_genre_tv = "Bronze_LH.genre_tv"
-# b2_genre_movie = "Bronze_LH.genre_movie"
-# b2_languages = "Bronze_LH.languages"
-# 
-# s2_countries = "Silver_LH.countries"
-# s2_fact_tv = "Silver_LH.fact_tv"
-# s2_fact_movies = "Silver_LH.fact_movies"
-# s2_genre_tv = "Silver_LH.genre_tv"
-# s2_genre_movie = "Silver_LH.genre_movie"
-# s2_languages = "Silver_LH.languages"
-# s2_genre_combined = "Silver_LH.genre_combined"
+b_countries = "Bronze_LH.countries"
+b_fact_tv = "Bronze_LH.fact_tv"
+b_fact_movies = "Bronze_LH.fact_movies"
+b_genre_tv = "Bronze_LH.genre_tv"
+b_genre_movie = "Bronze_LH.genre_movie"
+b_languages = "Bronze_LH.languages"
+
+s_countries = "Silver_LH.countries"
+s_fact_tv = "Silver_LH.fact_tv"
+s_fact_movies = "Silver_LH.fact_movies"
+s_genre_tv = "Silver_LH.genre_tv"
+s_genre_movie = "Silver_LH.genre_movie"
+s_languages = "Silver_LH.languages"
+s_genre_combined = "Silver_LH.genre_combined"
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
 
 # MARKDOWN ********************
 
@@ -195,7 +202,7 @@ df_tv.write.format("delta").option("overwriteSchema",True).mode("overwrite").sav
 
 # Transform dimension tables on the 15th or 28th
 
-if date.today().day in (15,28):
+if True:
 
     df_countries = spark.read.table(b_countries)
     df_countries = df_countries.withColumnRenamed("iso_3166_1","country_id")

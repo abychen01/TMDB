@@ -143,6 +143,18 @@ genre_movie_df.write.format("delta").mode("overwrite")\
 
 # CELL ********************
 
+df = spark.sql("SELECT * FROM Bronze_LH.languages LIMIT 1000")
+display(df)
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
 # GENRE TV
 # Fetch TV genres from TMDB API and store in Bronze layer
 

@@ -2,103 +2,6 @@
   "properties": {
     "activities": [
       {
-        "type": "Lookup",
-        "typeProperties": {
-          "source": {
-            "type": "DataWarehouseSource",
-            "sqlReaderQuery": "SELECT DAY(CAST( GETDATE() AS DATE )) AS day",
-            "partitionOption": "None",
-            "queryTimeout": "02:00:00"
-          },
-          "datasetSettings": {
-            "type": "DataWarehouseTable",
-            "schema": [],
-            "linkedService": {
-              "name": "StagingWarehouseForDataflows_20250828155700",
-              "properties": {
-                "type": "DataWarehouse",
-                "typeProperties": {
-                  "artifactId": "51e7f2ba-b44e-4e36-b3cc-50be33e8c879",
-                  "endpoint": "zhmk23ikgfteve2k3efvtgnvwa-q6uopoeojgcu5lyrrbodfjb2uu.datawarehouse.fabric.microsoft.com",
-                  "workspaceId": "b8e7a887-498e-4e85-af11-885c32a43aa5"
-                },
-                "annotations": []
-              }
-            },
-            "annotations": []
-          }
-        },
-        "policy": {
-          "timeout": "0.12:00:00",
-          "retry": 0,
-          "retryIntervalInSeconds": 30,
-          "secureInput": false,
-          "secureOutput": false
-        },
-        "name": "Date lookup",
-        "dependsOn": []
-      },
-      {
-        "type": "IfCondition",
-        "typeProperties": {
-          "expression": {
-            "value": "@or(\n    equals(activity('Date lookup').output.firstRow.day, 15),\n    equals(activity('Date lookup').output.firstRow.day, 28)\n)",
-            "type": "Expression"
-          },
-          "ifTrueActivities": [
-            {
-              "type": "TridentNotebook",
-              "typeProperties": {
-                "notebookId": "75e11ced-78c1-a816-42ba-4f37d8727ef9",
-                "workspaceId": "00000000-0000-0000-0000-000000000000"
-              },
-              "policy": {
-                "timeout": "0.12:00:00",
-                "retry": 0,
-                "retryIntervalInSeconds": 30,
-                "secureInput": false,
-                "secureOutput": false
-              },
-              "name": "Bronze dim",
-              "dependsOn": []
-            }
-          ],
-          "ifFalseActivities": []
-        },
-        "name": "If Condition to update dim tables",
-        "dependsOn": [
-          {
-            "activity": "Date lookup",
-            "dependencyConditions": [
-              "Succeeded"
-            ]
-          }
-        ]
-      },
-      {
-        "type": "TridentNotebook",
-        "typeProperties": {
-          "notebookId": "0e90e089-303a-ba6b-4a79-b7b06ac7ca9b",
-          "workspaceId": "00000000-0000-0000-0000-000000000000"
-        },
-        "policy": {
-          "timeout": "0.12:00:00",
-          "retry": 0,
-          "retryIntervalInSeconds": 30,
-          "secureInput": false,
-          "secureOutput": false
-        },
-        "name": "Bronze fact",
-        "dependsOn": [
-          {
-            "activity": "If Condition to update dim tables",
-            "dependencyConditions": [
-              "Succeeded"
-            ]
-          }
-        ]
-      },
-      {
         "type": "TridentNotebook",
         "typeProperties": {
           "notebookId": "3459e726-be28-9041-4973-5f90b030a6e7",
@@ -193,7 +96,7 @@
         "name": "Silver Nb",
         "dependsOn": [
           {
-            "activity": "Bronze fact",
+            "activity": "Bronze - dim",
             "dependencyConditions": [
               "Succeeded"
             ]
@@ -312,6 +215,68 @@
         "dependsOn": [
           {
             "activity": "Gold Nb",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "75e11ced-78c1-a816-42ba-4f37d8727ef9",
+          "workspaceId": "00000000-0000-0000-0000-000000000000"
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Bronze - dim",
+        "dependsOn": [
+          {
+            "activity": "Bronze fact_tv",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "0e90e089-303a-ba6b-4a79-b7b06ac7ca9b",
+          "workspaceId": "00000000-0000-0000-0000-000000000000"
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Bronze fact",
+        "dependsOn": []
+      },
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "2544c616-a17b-9c6d-4ccc-71ae66cef328",
+          "workspaceId": "00000000-0000-0000-0000-000000000000"
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Bronze fact_tv",
+        "dependsOn": [
+          {
+            "activity": "Bronze fact",
             "dependencyConditions": [
               "Succeeded"
             ]
