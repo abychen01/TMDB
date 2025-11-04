@@ -191,8 +191,6 @@ tv_df.write.format("delta").mode("overwrite").option("mergeSchema", True).saveAs
 
 # CELL ********************
 
-test.
-
 
 # METADATA ********************
 
