@@ -8,12 +8,12 @@
 # META   },
 # META   "dependencies": {
 # META     "lakehouse": {
-# META       "default_lakehouse": "d54a4800-b077-4df7-a53b-4a79430916a4",
+# META       "default_lakehouse": "127e6c72-d96b-4985-ab2f-e39b41092274",
 # META       "default_lakehouse_name": "Bronze_LH",
-# META       "default_lakehouse_workspace_id": "b8e7a887-498e-4e85-af11-885c32a43aa5",
+# META       "default_lakehouse_workspace_id": "3fc15e8d-b7ec-4d57-abd0-49cbf308b40a",
 # META       "known_lakehouses": [
 # META         {
-# META           "id": "d54a4800-b077-4df7-a53b-4a79430916a4"
+# META           "id": "127e6c72-d96b-4985-ab2f-e39b41092274"
 # META         }
 # META       ]
 # META     }
@@ -316,7 +316,7 @@ for index, row in enumerate(rows):
 actor_df = spark.createDataFrame(movie_data2,["Movie_ID","Name","Gender"])
 movie_df1 = movie_df1.join(actor_df,"Movie_ID","left")
 display(movie_df1)
-movie_df1.write.format("delta").mode("append").option("mergeSchema", True).saveAsTable("fact_movies")
+movie_df1.write.format("delta").mode("overwrite").option("mergeSchema", True).saveAsTable("fact_movies")
 
 
 # METADATA ********************
