@@ -8,12 +8,12 @@
 # META   },
 # META   "dependencies": {
 # META     "lakehouse": {
-# META       "default_lakehouse": "5f908ebc-d61f-4264-97d2-eaa9e2d1b9c3",
+# META       "default_lakehouse": "06daaab7-ad22-4d32-a869-25c3c0b18e90",
 # META       "default_lakehouse_name": "Gold_LH",
-# META       "default_lakehouse_workspace_id": "b8e7a887-498e-4e85-af11-885c32a43aa5",
+# META       "default_lakehouse_workspace_id": "3fc15e8d-b7ec-4d57-abd0-49cbf308b40a",
 # META       "known_lakehouses": [
 # META         {
-# META           "id": "5f908ebc-d61f-4264-97d2-eaa9e2d1b9c3"
+# META           "id": "06daaab7-ad22-4d32-a869-25c3c0b18e90"
 # META         }
 # META       ]
 # META     }
@@ -22,9 +22,11 @@
 
 # CELL ********************
 
-import pyodbc
+import pyodbc, os
 from pyspark.sql.types import StructType, StringType, StructType
 from pyspark.sql.functions import col, desc, asc
+from azure.identity import DefaultAzureCredential
+from azure.keyvault.secrets import SecretClient
 
 # METADATA ********************
 
@@ -40,14 +42,27 @@ table_list = [row['tableName'] for row in tables_df.collect()]
 
 db = "TMDB"
 
-password = spark.read.parquet("Files/creds").collect()[0]['password']
+df_creds = spark.read.parquet('Files/creds')
+
+os.environ["AZURE_CLIENT_ID"] = df_creds.collect()[0]["AZURE_CLIENT_ID"]
+os.environ["AZURE_TENANT_ID"] = df_creds.collect()[0]["AZURE_TENANT_ID"]
+os.environ["AZURE_CLIENT_SECRET"] = df_creds.collect()[0]["AZURE_CLIENT_SECRET"]
+
+
+vault_url = "https://vaultforfabric.vault.azure.net/"
+credential = DefaultAzureCredential()
+client = SecretClient(vault_url=vault_url, credential=credential)
+
+server_password = client.get_secret("sql-server-password").value
+
+print(server_password)
 
 conn_str_master = (
             f"DRIVER={{ODBC Driver 18 for SQL Server}};"
             f"SERVER=tcp:myfreesqldbserver66.database.windows.net,1433;"
             f"DATABASE=master;"
             f"UID=admin2;"
-            f"PWD={password};"
+            f"PWD={server_password};"
             f"Encrypt=yes;"
             f"TrustServerCertificate=yes;"
             f"Connect Timeout=30;"
@@ -58,7 +73,7 @@ conn_str = (
             f"SERVER=tcp:myfreesqldbserver66.database.windows.net,1433;"
             f"DATABASE={db};"
             f"UID=admin2;"
-            f"PWD={password};"
+            f"PWD={server_password};"
             f"Encrypt=yes;"
             f"TrustServerCertificate=yes;"
             f"Connect Timeout=30;"
@@ -177,7 +192,7 @@ jdbc_url = "jdbc:sqlserver://myfreesqldbserver66.database.windows.net:1433;" \
 
 jdbc_properties = {
     "user": "admin2",
-    "password": password,
+    "password": server_password,
     "driver": "com.microsoft.sqlserver.jdbc.SQLServerDriver"
 }
 
