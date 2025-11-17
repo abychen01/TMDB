@@ -52,8 +52,8 @@
       {
         "type": "TridentNotebook",
         "typeProperties": {
-          "notebookId": "2544c616-a17b-9c6d-4ccc-71ae66cef328",
-          "workspaceId": "00000000-0000-0000-0000-000000000000"
+          "notebookId": "327dc0ee-f42a-4a82-831b-fb581c316e51",
+          "workspaceId": "3fc15e8d-b7ec-4d57-abd0-49cbf308b40a"
         },
         "policy": {
           "timeout": "6.12:00:00",
@@ -63,6 +63,8 @@
           "secureOutput": false
         },
         "name": "Bronze_NB - fact_tv",
+        "state": "Inactive",
+        "onInactiveMarkAs": "Succeeded",
         "dependsOn": [
           {
             "activity": "ForEach",
@@ -71,6 +73,52 @@
             ]
           }
         ]
+      },
+      {
+        "type": "ForEach",
+        "typeProperties": {
+          "isSequential": true,
+          "items": {
+            "value": "@pipeline().parameters.batch2",
+            "type": "Expression"
+          },
+          "activities": [
+            {
+              "type": "TridentNotebook",
+              "typeProperties": {
+                "notebookId": "f2fc8b3d-b8ff-afd6-4d1e-285b461e6ad8",
+                "workspaceId": "00000000-0000-0000-0000-000000000000",
+                "parameters": {
+                  "start": {
+                    "value": {
+                      "value": "@item().start",
+                      "type": "Expression"
+                    },
+                    "type": "int"
+                  },
+                  "end": {
+                    "value": {
+                      "value": "@item().end",
+                      "type": "Expression"
+                    },
+                    "type": "int"
+                  }
+                }
+              },
+              "policy": {
+                "timeout": "7.00:00:00",
+                "retry": 2,
+                "retryIntervalInSeconds": 30,
+                "secureInput": false,
+                "secureOutput": false
+              },
+              "name": "Bronze_NB - fact_movies_copy1",
+              "dependsOn": []
+            }
+          ]
+        },
+        "name": "ForEach_copy1",
+        "dependsOn": []
       }
     ],
     "parameters": {
@@ -92,6 +140,15 @@
           {
             "start": 1500001,
             "end": 2000000
+          }
+        ]
+      },
+      "batch2": {
+        "type": "array",
+        "defaultValue": [
+          {
+            "start": 0,
+            "end": 500000
           }
         ]
       }
