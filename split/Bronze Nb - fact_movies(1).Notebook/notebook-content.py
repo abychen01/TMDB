@@ -191,28 +191,21 @@ headers = {
 # META   "language_group": "synapse_pyspark"
 # META }
 
-# CELL ********************
+# MARKDOWN ********************
 
-##### Logs table creation
-
-schema = StructType([
-    StructField("Date",TimestampType()),
-    StructField('ID', IntegerType()),
-    StructField('Table',StringType()),
-    StructField('Status',StringType())  
-])
-lists = {}
-temp_df = spark.createDataFrame(lists,schema=schema)
-temp_df.write.format("delta").saveAsTable("logs")
-
-spark.sql("TRUNCATE TABLE logs")
-
-# METADATA ********************
-
-# META {
-# META   "language": "python",
-# META   "language_group": "synapse_pyspark"
-# META }
+# ##### Logs table creation
+# 
+# schema = StructType([
+#     StructField("Date",TimestampType()),
+#     StructField('ID', IntegerType()),
+#     StructField('Table',StringType()),
+#     StructField('Status',StringType())  
+# ])
+# lists = {}
+# temp_df = spark.createDataFrame(lists,schema=schema)
+# temp_df.write.format("delta").saveAsTable("logs")
+# 
+# spark.sql("TRUNCATE TABLE logs")
 
 # CELL ********************
 
@@ -323,7 +316,7 @@ for index, row in enumerate(rows):
 actor_df = spark.createDataFrame(movie_data2,["Movie_ID","Name","Gender"])
 movie_df1 = movie_df1.join(actor_df,"Movie_ID","left")
 display(movie_df1)
-movie_df1.write.format("delta").mode("overwrite").option("mergeSchema", True).saveAsTable("fact_movies")
+movie_df1.write.format("delta").mode("append").option("mergeSchema", True).saveAsTable("fact_movies_temp")
 
 
 # METADATA ********************
