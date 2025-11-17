@@ -191,21 +191,28 @@ headers = {
 # META   "language_group": "synapse_pyspark"
 # META }
 
-# MARKDOWN ********************
+# CELL ********************
 
-# ##### Logs table creation
-# 
-# schema = StructType([
-#     StructField("Date",TimestampType()),
-#     StructField('ID', IntegerType()),
-#     StructField('Table',StringType()),
-#     StructField('Status',StringType())  
-# ])
-# lists = {}
-# temp_df = spark.createDataFrame(lists,schema=schema)
-# temp_df.write.format("delta").saveAsTable("logs")
-# 
-# spark.sql("TRUNCATE TABLE logs")
+##### Logs table creation
+
+schema = StructType([
+    StructField("Date",TimestampType()),
+    StructField('ID', IntegerType()),
+    StructField('Table',StringType()),
+    StructField('Status',StringType())  
+])
+lists = {}
+temp_df = spark.createDataFrame(lists,schema=schema)
+temp_df.write.format("delta").saveAsTable("logs")
+
+spark.sql("TRUNCATE TABLE logs")
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
 
 # CELL ********************
 

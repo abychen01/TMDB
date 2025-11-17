@@ -13,8 +13,8 @@
             {
               "type": "TridentNotebook",
               "typeProperties": {
-                "notebookId": "e6f9e795-e5df-45ed-beee-1e824f32764c",
-                "workspaceId": "b8e7a887-498e-4e85-af11-885c32a43aa5",
+                "notebookId": "07440d7c-85c9-4930-a57c-c15129642c85",
+                "workspaceId": "3fc15e8d-b7ec-4d57-abd0-49cbf308b40a",
                 "parameters": {
                   "start": {
                     "value": {
