@@ -1,4 +1,4 @@
-hihhhv# TMDB Data Engineering Project
+hhihhhv# TMDB Data Engineering Project
 
 This project is a data engineering pipeline that collects movie and TV show data from The Movie Database (TMDB) API and processes it using a medallion architecture (Bronze, Silver, Gold layers). It is implemented using Microsoft Fabric with PySpark notebooks and orchestrated via pipelines. The project is divided into two main parts: **Historic ETL** for initial data collection and **Daily ETL** for incremental updates.
 
